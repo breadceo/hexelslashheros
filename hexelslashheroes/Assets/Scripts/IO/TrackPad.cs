@@ -5,7 +5,7 @@ using System.Collections;
 
 public class TrackPad : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler {
 	[SerializeField]
-	protected float SwipeThreshold = 0.2f;
+	protected float SwipeThreshold = 0.1f;
 	[SerializeField]
 	protected float MoveThreshold = 5f;
 	protected float PointerDownStartTime;
@@ -13,11 +13,13 @@ public class TrackPad : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, I
 	protected TrackPadEvent Tpe = new TrackPadEvent ();
 
 	public void OnPointerDown (PointerEventData eventData) {
+		Debug.Log ("OnPointerDown");
 		PointerDownStartTime = Time.time;
 		Tpe.PointerDownPos = eventData.position;
 	}
 
 	public void OnBeginDrag (PointerEventData eventData) {
+		Debug.LogFormat ("OnBeginDrag time {0}", Time.time - PointerDownStartTime);
 		if (Time.time - PointerDownStartTime <= SwipeThreshold) {
 			Tpe.Kind = TrackPadEvent.EventKind.Swipe;
 		} else {
@@ -26,6 +28,7 @@ public class TrackPad : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, I
 	}
 
 	public void OnEndDrag (PointerEventData eventData) {
+		Debug.Log ("OnEndDrag");
 		Tpe.PointerUpPos = eventData.position;
 		Tpe.Dir = Vector2.zero;
 		if (OnChangeTrackPadState != null) {
@@ -60,5 +63,9 @@ public struct TrackPadEvent {
 		Swipe
 	}
 	public EventKind Kind { get; set; }
+
+	public void DebugEvent () {
+		Debug.LogFormat ("down: ({0}, {1}) up : ({2}, {3}) dir : ({4}, {5}) kind : {6}", PointerDownPos.x, PointerDownPos.y, PointerUpPos.x, PointerUpPos.y, Dir.x, Dir.y, Kind);
+	}
 }
 

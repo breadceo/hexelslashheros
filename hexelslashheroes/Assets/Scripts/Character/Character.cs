@@ -21,12 +21,18 @@ public class Character : MonoBehaviour {
 	}
 
 	protected void ChangeTrackPadState (TrackPadEvent e) {
+		e.DebugEvent ();
 		if (e.Kind == TrackPadEvent.EventKind.Axis) {
 			Move (e.Dir);
+		} else if (e.Kind == TrackPadEvent.EventKind.Swipe) {
+			Slash (e.Dir);
 		}
 	}
 
-	public void Move (Vector3 dir) {
+	void Move (Vector3 dir) {
 		Dir = dir;
+	}
+
+	void Slash (Vector3 dir) {
 	}
 }
