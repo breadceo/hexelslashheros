@@ -5,14 +5,14 @@ using System.Collections;
 public class PlayerTrackingCamera : MonoBehaviour {
 	[SerializeField]
 	protected Character Player;
-	protected Camera camera;
+	protected Camera Target;
 
 	void Awake () {
-		camera = GetComponent <Camera> ();
+		Target = GetComponent <Camera> ();
 	}
 
 	void Update () {
 		var targetPos = new Vector3 (Player.transform.position.x, Player.transform.position.y, -10f);
-		camera.transform.position = Vector3.Lerp (camera.transform.position, targetPos, 0.1f);
+		Target.transform.position = Vector3.Lerp (Target.transform.position, targetPos, 0.1f);
 	}
 }

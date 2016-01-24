@@ -56,7 +56,7 @@ public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler
 			dispatchEvent = true;
 		} else if (Input.GetKey (KeyCode.DownArrow) && Input.GetKey (KeyCode.RightArrow)) {
 			Tpe.Kind = TrackPadEvent.EventKind.Swipe;
-			Tpe.Vector = DownLeft;
+			Tpe.Vector = DownRight;
 			dispatchEvent = true;
 		}
 		if (dispatchEvent) {
@@ -69,10 +69,10 @@ public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler
 	internal delegate void ChangeTrackPadState (TrackPadEvent e);
 	internal event ChangeTrackPadState OnChangeTrackPadState;
 
-	internal Vector2 UpRight = new Vector2 (0.7f, 0.7f);
-	internal Vector2 UpLeft = new Vector2 (-0.7f, 0.7f);
-	internal Vector2 DownRight = new Vector2 (0.7f, -0.7f);
-	internal Vector2 DownLeft = new Vector2 (-0.7f, -0.7f);
+	internal static Vector2 UpRight = new Vector2 (0.7f, 0.7f);
+	internal static Vector2 UpLeft = new Vector2 (-0.7f, 0.7f);
+	internal static Vector2 DownRight = new Vector2 (0.7f, -0.7f);
+	internal static Vector2 DownLeft = new Vector2 (-0.7f, -0.7f);
 }
 
 public struct TrackPadEvent {
