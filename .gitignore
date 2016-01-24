@@ -4,3 +4,6 @@ hexelslashheroes/hexelslashheroes-csharp.sln
 hexelslashheroes/hexelslashheroes.sln
 hexelslashheroes/hexelslashheroes.userprefs
 build
+hexelslashheroes/Library/
+hexelslashheroes/Temp/
+hexelslashheroes/ProjectSettings/

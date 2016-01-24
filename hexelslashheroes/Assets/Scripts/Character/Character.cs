@@ -28,12 +28,12 @@ public class Character : MonoBehaviour {
 	}
 
 	void Move (Vector3 dir) {
-		var quat = Mathf.PI * 0.25f;
-		var cos = Mathf.Cos (quat);
-		var sin = Mathf.Sin (quat);
-		var x = cos * dir.x + sin * dir.y;
-		var y = -sin * dir.x + cos * dir.y;
-		Dir = new Vector3 (x, y, 0f).normalized;
-		Debug.LogFormat ("{0} {1}", dir, Dir);
+		//var quat = Mathf.PI * 0.25f;
+		//var cos = Mathf.Cos (quat);
+		//var sin = Mathf.Sin (quat);
+		//var x = cos * dir.x + sin * dir.y;
+		//var y = -sin * dir.x + cos * dir.y;
+		Dir = dir;//new Vector3 (x, y, 0f).normalized;
+		//Debug.LogFormat ("{0} {1}", dir, Dir);
 	}
 }
