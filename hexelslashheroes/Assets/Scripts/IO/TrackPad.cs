@@ -42,19 +42,19 @@ public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler
 
 	void Update () {
 		bool dispatchEvent = false;
-		if (Input.GetKey (KeyCode.UpArrow) && Input.GetKey (KeyCode.LeftArrow)) {
+		if (Input.GetKey (KeyCode.W) && Input.GetKey (KeyCode.A)) {
 			Tpe.Kind = TrackPadEvent.EventKind.Swipe;
 			Tpe.Vector = UpLeft;
 			dispatchEvent = true;
-		} else if (Input.GetKey (KeyCode.UpArrow) && Input.GetKey (KeyCode.RightArrow)) {
+		} else if (Input.GetKey (KeyCode.W) && Input.GetKey (KeyCode.D)) {
 			Tpe.Kind = TrackPadEvent.EventKind.Swipe;
 			Tpe.Vector = UpRight;
 			dispatchEvent = true;
-		} else if (Input.GetKey (KeyCode.DownArrow) && Input.GetKey (KeyCode.LeftArrow)) {
+		} else if (Input.GetKey (KeyCode.S) && Input.GetKey (KeyCode.A)) {
 			Tpe.Kind = TrackPadEvent.EventKind.Swipe;
 			Tpe.Vector = DownLeft;
 			dispatchEvent = true;
-		} else if (Input.GetKey (KeyCode.DownArrow) && Input.GetKey (KeyCode.RightArrow)) {
+		} else if (Input.GetKey (KeyCode.S) && Input.GetKey (KeyCode.D)) {
 			Tpe.Kind = TrackPadEvent.EventKind.Swipe;
 			Tpe.Vector = DownRight;
 			dispatchEvent = true;
@@ -88,4 +88,3 @@ public struct TrackPadEvent {
 		Debug.LogFormat ("down: ({0}, {1}) kind : {2}", Vector.x, Vector.y, Kind);
 	}
 }
-
