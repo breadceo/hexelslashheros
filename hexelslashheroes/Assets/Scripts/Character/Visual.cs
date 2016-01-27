@@ -1,21 +1,27 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [RequireComponent (typeof (Animator))]
 public class Visual : MonoBehaviour {
 	[SerializeField] protected TrackPad Controller;
-	protected Animator Anim;
-	protected GameObject Weapon;
-	protected SpriteRenderer WeaponSpr;
+	protected Animator anim;
+	protected GameObject weapon;
+	protected SpriteRenderer weaponSpr;
+	protected List<MotionBlur> blurs;
 
 	void Awake () {
-		Weapon = transform.Find ("Weapon").gameObject;
-		WeaponSpr = Weapon.GetComponent <SpriteRenderer> ();
-		Anim = GetComponent <Animator> ();
+		weapon = transform.Find ("Weapon").gameObject;
+		weaponSpr = weapon.GetComponent <SpriteRenderer> ();
+		anim = GetComponent <Animator> ();
+		blurs = new List<MotionBlur> ();
+		blurs.Add (transform.Find ("Body").GetComponent <MotionBlur> ());
+		blurs.Add (transform.Find ("Tail").GetComponent <MotionBlur> ());
+		blurs.Add (transform.Find ("Weapon").GetComponent <MotionBlur> ());
 	}
 
 	public void ChangeWeaponOrder (int order) {
-		WeaponSpr.sortingOrder = order;
+		weaponSpr.sortingOrder = order;
 	}
 	
 	void OnEnable () {
@@ -29,13 +35,17 @@ public class Visual : MonoBehaviour {
 	protected void ChangeTrackPadState (TrackPadEvent e) {
 		if (e.Kind == TrackPadEvent.EventKind.Swipe) {
 			if (e.Vector == TrackPad.UpRight) {
-				Anim.Play ("UpRight", 0, 0f);
+				anim.Play ("UpRight", 0, 0f);
+				blurs.ForEach (b => b.offset = new Vector3 (0, 0, -1));
 			} else if (e.Vector == TrackPad.UpLeft) {
-				Anim.Play ("UpLeft", 0, 0f);
+				anim.Play ("UpLeft", 0, 0f);
+				blurs.ForEach (b => b.offset = new Vector3 (0, 0, -1));
 			} else if (e.Vector == TrackPad.DownRight) {
-				Anim.Play ("DownRight", 0, 0f);
+				anim.Play ("DownRight", 0, 0f);
+				blurs.ForEach (b => b.offset = new Vector3 (0, 0, 1));
 			} else if (e.Vector == TrackPad.DownLeft) {
-				Anim.Play ("DownLeft", 0, 0f);
+				anim.Play ("DownLeft", 0, 0f);
+				blurs.ForEach (b => b.offset = new Vector3 (0, 0, 1));
 			}
 		}
 	}

@@ -7,3 +7,7 @@ build
 hexelslashheroes/Library/
 hexelslashheroes/Temp/
 hexelslashheroes/ProjectSettings/
+hexelslashheroes/Assembly-CSharp-Editor-vs.csproj
+hexelslashheroes/Assembly-CSharp-Editor.csproj
+hexelslashheroes/Assembly-CSharp-firstpass-vs.csproj
+hexelslashheroes/Assembly-CSharp-firstpass.csproj
