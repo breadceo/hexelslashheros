@@ -8,6 +8,15 @@ public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler
 	protected TrackPadEvent Tpe = new TrackPadEvent ();
 	[SerializeField] float TrackPadSensibility = 50f;
 
+	void Awake () {
+		var x = Mathf.Cos (Mathf.PI / 6f);
+		var y = Mathf.Sin (Mathf.PI / 6f);
+		UpRight = new Vector2 (x, y).normalized;
+		UpLeft = new Vector2 (-x, y).normalized;
+		DownRight = new Vector2 (x, -y).normalized;
+		DownLeft = new Vector2 (-x, -y).normalized;
+	}
+
 	public void OnPointerDown (PointerEventData eventData) {
 		PointerDownPos = eventData.position;
 	}
@@ -75,10 +84,10 @@ public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler
 	internal delegate void ChangeTrackPadState (TrackPadEvent e);
 	internal event ChangeTrackPadState OnChangeTrackPadState;
 
-	internal static Vector2 UpRight = new Vector2 (0.7f, 0.7f);
-	internal static Vector2 UpLeft = new Vector2 (-0.7f, 0.7f);
-	internal static Vector2 DownRight = new Vector2 (0.7f, -0.7f);
-	internal static Vector2 DownLeft = new Vector2 (-0.7f, -0.7f);
+	internal static Vector2 UpRight;
+	internal static Vector2 UpLeft;
+	internal static Vector2 DownRight;
+	internal static Vector2 DownLeft;
 }
 
 public struct TrackPadEvent {
