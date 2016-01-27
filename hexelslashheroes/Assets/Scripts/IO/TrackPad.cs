@@ -6,7 +6,6 @@ using System.Collections;
 public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler {
 	protected Vector2 PointerDownPos;
 	protected TrackPadEvent Tpe = new TrackPadEvent ();
-//	protected const Vector2 Up =
 
 	public void OnPointerDown (PointerEventData eventData) {
 		PointerDownPos = eventData.position;
@@ -15,22 +14,8 @@ public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler
 	public void OnPointerClick (PointerEventData eventData) {
 		var diff = eventData.position - PointerDownPos;
 		if (diff.magnitude > 0) {
-			Tpe.Kind = TrackPadEvent.EventKind.Swipe;
 			diff = diff.normalized;
-			float ur = Vector2.Angle (UpRight, diff);
-			float ul = Vector2.Angle (UpLeft, diff);
-			float dr = Vector2.Angle (DownRight, diff);
-			float dl = Vector2.Angle (DownLeft, diff);
-			float choose = Mathf.Min (new float [] { ur, ul, dr, dl });
-			if (choose == ur) {
-				Tpe.Vector = UpRight;
-			} else if (choose == ul) {
-				Tpe.Vector = UpLeft;
-			} else if (choose == dr) {
-				Tpe.Vector = DownRight;
-			} else {
-				Tpe.Vector = DownLeft;
-			}
+			Tpe = CreateTrackPadEventByDirection (diff);
 		} else {
 			Tpe.Kind = TrackPadEvent.EventKind.Touch;
 			Tpe.Vector = eventData.position;
@@ -38,6 +23,26 @@ public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler
 		if (OnChangeTrackPadState != null) {
 			OnChangeTrackPadState (Tpe);
 		}
+	}
+
+	public TrackPadEvent CreateTrackPadEventByDirection (Vector3 dir) {
+		TrackPadEvent ret = new TrackPadEvent ();
+		ret.Kind = TrackPadEvent.EventKind.Swipe;
+		float ur = Vector2.Angle (UpRight, dir);
+		float ul = Vector2.Angle (UpLeft, dir);
+		float dr = Vector2.Angle (DownRight, dir);
+		float dl = Vector2.Angle (DownLeft, dir);
+		float choose = Mathf.Min (new float [] { ur, ul, dr, dl });
+		if (choose == ur) {
+			ret.Vector = UpRight;
+		} else if (choose == ul) {
+			ret.Vector = UpLeft;
+		} else if (choose == dr) {
+			ret.Vector = DownRight;
+		} else {
+			ret.Vector = DownLeft;
+		}
+		return ret;
 	}
 
 	void Update () {

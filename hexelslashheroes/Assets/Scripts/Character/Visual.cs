@@ -18,6 +18,7 @@ public class Visual : MonoBehaviour {
 		blurs.Add (transform.Find ("Body").GetComponent <MotionBlur> ());
 		blurs.Add (transform.Find ("Tail").GetComponent <MotionBlur> ());
 		blurs.Add (transform.Find ("Weapon").GetComponent <MotionBlur> ());
+		SetBlurs (false);
 	}
 
 	public void ChangeWeaponOrder (int order) {
@@ -26,6 +27,7 @@ public class Visual : MonoBehaviour {
 	
 	void OnEnable () {
 		Controller.OnChangeTrackPadState += ChangeTrackPadState;
+		anim.enabled = false;
 	}
 	
 	void OnDisable () {
@@ -34,6 +36,7 @@ public class Visual : MonoBehaviour {
 
 	protected void ChangeTrackPadState (TrackPadEvent e) {
 		if (e.Kind == TrackPadEvent.EventKind.Swipe) {
+			anim.enabled = true;
 			if (e.Vector == TrackPad.UpRight) {
 				anim.Play ("UpRight", 0, 0f);
 				blurs.ForEach (b => b.offset = new Vector3 (0, 0, -1));
@@ -48,5 +51,17 @@ public class Visual : MonoBehaviour {
 				blurs.ForEach (b => b.offset = new Vector3 (0, 0, 1));
 			}
 		}
+	}
+
+	public void SetBlurs (bool enable) {
+		blurs.ForEach (b => b.enabled = enable);
+	}
+
+	public void StopAnimation () {
+		anim.enabled = false;
+	}
+
+	public void ForcePlayAnimation (TrackPadEvent e) {
+		ChangeTrackPadState (e);
 	}
 }
