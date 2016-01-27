@@ -8,10 +8,11 @@ public class Character : MonoBehaviour {
 	[SerializeField] protected Camera characterCamera;
 	protected Vector3 dir = Vector3.zero;
 	protected Coroutine attackCoroutine;
-	[SerializeField] protected float attackDashSpeed = 30f;
+	[SerializeField] protected float attackDuration = 0.1f;
+	[SerializeField] protected float attackRange = 10f;
 	protected Vector3 attackStartPoint = Vector3.zero;
 	protected Vector3 attackEndPoint = Vector3.zero;
-	protected Vector3 attackMoveVector = Vector3.zero;
+	protected float attackStartTime;
 	protected enum CharacterState
 	{
 		Idle,
@@ -33,20 +34,20 @@ public class Character : MonoBehaviour {
 			transform.position += dir * moveSpeed * Time.deltaTime;
 		});
 		stateMachine.Add (CharacterState.Attack, () => {
-			transform.position += dir * attackDashSpeed * Time.deltaTime;
-			var t = (transform.position - attackStartPoint).magnitude / attackMoveVector.magnitude;
+			float t = (Time.time - attackStartTime) / 0.2f;
 			t = Mathf.Clamp01 (t);
+			transform.position = Vector3.Lerp (attackStartPoint, attackEndPoint, t);
 			if (t >= 1f) {
 				transform.position = attackEndPoint;
 				ChangeState (CharacterState.Idle);
 			}
 		});
-		//		stateMachine.Add (CharacterState.Stiff, () => {
-		//		});
+//		stateMachine.Add (CharacterState.Stiff, () => {
+//		});
 
 		stateStart.Add (CharacterState.Attack, () => {
 			visual.SetBlurs (true);
-			visual.ForcePlayAnimation (controller.CreateTrackPadEventByDirection (attackMoveVector.normalized));
+			visual.ForcePlayAnimation (controller.CreateTrackPadEventByDirection (dir));
 		});
 
 		stateEnd.Add (CharacterState.Move, () => {
@@ -58,7 +59,6 @@ public class Character : MonoBehaviour {
 			dir = Vector3.zero;
 			attackStartPoint = Vector3.zero;
 			attackEndPoint = Vector3.zero;
-			attackMoveVector = Vector3.zero;
 		});
 		ChangeState (CharacterState.Idle);
 	}
@@ -83,11 +83,12 @@ public class Character : MonoBehaviour {
 			});
 		} else if (e.Kind == TrackPadEvent.EventKind.Touch) {
 			ChangeState (CharacterState.Attack, () => {
+				attackStartTime = Time.time;
 				attackStartPoint = transform.position;
 				var worldPosition = characterCamera.ScreenToWorldPoint (e.Vector);
-				attackEndPoint = new Vector3 (worldPosition.x, worldPosition.y, 0f);
-				attackMoveVector = attackEndPoint - attackStartPoint;
-				dir = attackMoveVector.normalized;
+				var clickPoint = new Vector3 (worldPosition.x, worldPosition.y, transform.position.z);
+				dir = (clickPoint - attackStartPoint).normalized;
+				attackEndPoint = attackStartPoint + dir * attackRange;
 			});
 		}
 	}
