@@ -6,6 +6,7 @@ using System.Collections;
 public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler {
 	protected Vector2 PointerDownPos;
 	protected TrackPadEvent Tpe = new TrackPadEvent ();
+	[SerializeField] float TrackPadSensibility = 50f;
 
 	public void OnPointerDown (PointerEventData eventData) {
 		PointerDownPos = eventData.position;
@@ -13,7 +14,7 @@ public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler
 
 	public void OnPointerClick (PointerEventData eventData) {
 		var diff = eventData.position - PointerDownPos;
-		if (diff.magnitude > 0) {
+		if (diff.magnitude > TrackPadSensibility) {
 			diff = diff.normalized;
 			Tpe = CreateTrackPadEventByDirection (diff);
 		} else {
