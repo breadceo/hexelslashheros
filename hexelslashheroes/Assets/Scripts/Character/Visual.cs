@@ -26,16 +26,16 @@ public class Visual : MonoBehaviour {
 	}
 	
 	void OnEnable () {
-		Controller.OnChangeTrackPadState += ChangeTrackPadState;
+		Controller.OnChangeController += ChangeTrackPadState;
 		anim.enabled = false;
 	}
 	
 	void OnDisable () {
-		Controller.OnChangeTrackPadState -= ChangeTrackPadState;
+		Controller.OnChangeController -= ChangeTrackPadState;
 	}
 
-	protected void ChangeTrackPadState (TrackPadEvent e) {
-		if (e.Kind == TrackPadEvent.EventKind.Swipe) {
+	protected void ChangeTrackPadState (ControlEvent e) {
+		if (e.Kind == ControlEvent.EventKind.Swipe) {
 			anim.enabled = true;
 			if (e.Vector == TrackPad.UpRight) {
 				anim.Play ("UpRight", 0, 0f);
@@ -61,7 +61,7 @@ public class Visual : MonoBehaviour {
 		anim.enabled = false;
 	}
 
-	public void ForcePlayAnimation (TrackPadEvent e) {
+	public void ForcePlayAnimation (ControlEvent e) {
 		ChangeTrackPadState (e);
 	}
 }

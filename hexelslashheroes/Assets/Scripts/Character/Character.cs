@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class Character : MonoBehaviour {
-	[SerializeField] protected TrackPad controller;
+	[SerializeField] protected IController controller;
 	[SerializeField] protected float moveSpeed = 7.5f;
 	[SerializeField] protected Camera characterCamera;
 	protected Vector3 dir = Vector3.zero;
@@ -98,11 +98,11 @@ public class Character : MonoBehaviour {
 	}
 
 	void OnEnable () {
-		controller.OnChangeTrackPadState += ChangeTrackPadState;
+		controller.OnChangeController += ChangeTrackPadState;
 	}
 
 	void OnDisable () {
-		controller.OnChangeTrackPadState -= ChangeTrackPadState;
+		controller.OnChangeController -= ChangeTrackPadState;
 	}
 
 	protected void Update () {
@@ -128,15 +128,15 @@ public class Character : MonoBehaviour {
 		Gizmos.DrawRay (rayOrigin, Vector3.forward * 100f);
 	}
 
-	protected void ChangeTrackPadState (TrackPadEvent e) {
+	protected void ChangeTrackPadState (ControlEvent e) {
 		if (controllable == false) {
 			return;
 		}
-		if (e.Kind == TrackPadEvent.EventKind.Swipe) {
+		if (e.Kind == ControlEvent.EventKind.Swipe) {
 			ChangeState (CharacterState.Move, () => {
 				dir = e.Vector;
 			});
-		} else if (e.Kind == TrackPadEvent.EventKind.Touch) {
+		} else if (e.Kind == ControlEvent.EventKind.Touch) {
 			ChangeState (CharacterState.Attack, () => {
 				attackStartTime = Time.time;
 				attackStartPoint = transform.position;

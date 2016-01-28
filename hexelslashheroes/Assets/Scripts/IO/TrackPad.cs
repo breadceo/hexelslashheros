@@ -3,10 +3,10 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections;
 
-public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler {
-	protected Vector2 PointerDownPos;
-	protected TrackPadEvent Tpe = new TrackPadEvent ();
-	[SerializeField] float TrackPadSensibility = 50f;
+public class TrackPad : IController, IPointerDownHandler, IPointerClickHandler {
+	protected Vector2 pointerDownPos;
+	protected ControlEvent controlEvent = new ControlEvent ();
+	[SerializeField] float trackPadSensibility = 50f;
 
 	void Awake () {
 		var x = Mathf.Cos (Mathf.PI / 6f);
@@ -18,26 +18,24 @@ public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler
 	}
 
 	public void OnPointerDown (PointerEventData eventData) {
-		PointerDownPos = eventData.position;
+		pointerDownPos = eventData.position;
 	}
 
 	public void OnPointerClick (PointerEventData eventData) {
-		var diff = eventData.position - PointerDownPos;
-		if (diff.magnitude > TrackPadSensibility) {
+		var diff = eventData.position - pointerDownPos;
+		if (diff.magnitude > trackPadSensibility) {
 			diff = diff.normalized;
-			Tpe = CreateTrackPadEventByDirection (diff);
+			controlEvent = CreateTrackPadEventByDirection (diff);
 		} else {
-			Tpe.Kind = TrackPadEvent.EventKind.Touch;
-			Tpe.Vector = eventData.position;
+			controlEvent.Kind = ControlEvent.EventKind.Touch;
+			controlEvent.Vector = eventData.position;
 		}
-		if (OnChangeTrackPadState != null) {
-			OnChangeTrackPadState (Tpe);
-		}
+		SpawnEvent (controlEvent);
 	}
 
-	public TrackPadEvent CreateTrackPadEventByDirection (Vector3 dir) {
-		TrackPadEvent ret = new TrackPadEvent ();
-		ret.Kind = TrackPadEvent.EventKind.Swipe;
+	public override ControlEvent CreateTrackPadEventByDirection (Vector3 dir) {
+		ControlEvent ret = new ControlEvent ();
+		ret.Kind = ControlEvent.EventKind.Swipe;
 		float ur = Vector2.Angle (UpRight, dir);
 		float ul = Vector2.Angle (UpLeft, dir);
 		float dr = Vector2.Angle (DownRight, dir);
@@ -58,48 +56,29 @@ public class TrackPad : MonoBehaviour, IPointerDownHandler, IPointerClickHandler
 	void Update () {
 		bool dispatchEvent = false;
 		if (Input.GetKey (KeyCode.W) && Input.GetKey (KeyCode.A)) {
-			Tpe.Kind = TrackPadEvent.EventKind.Swipe;
-			Tpe.Vector = UpLeft;
+			controlEvent.Kind = ControlEvent.EventKind.Swipe;
+			controlEvent.Vector = UpLeft;
 			dispatchEvent = true;
 		} else if (Input.GetKey (KeyCode.W) && Input.GetKey (KeyCode.D)) {
-			Tpe.Kind = TrackPadEvent.EventKind.Swipe;
-			Tpe.Vector = UpRight;
+			controlEvent.Kind = ControlEvent.EventKind.Swipe;
+			controlEvent.Vector = UpRight;
 			dispatchEvent = true;
 		} else if (Input.GetKey (KeyCode.S) && Input.GetKey (KeyCode.A)) {
-			Tpe.Kind = TrackPadEvent.EventKind.Swipe;
-			Tpe.Vector = DownLeft;
+			controlEvent.Kind = ControlEvent.EventKind.Swipe;
+			controlEvent.Vector = DownLeft;
 			dispatchEvent = true;
 		} else if (Input.GetKey (KeyCode.S) && Input.GetKey (KeyCode.D)) {
-			Tpe.Kind = TrackPadEvent.EventKind.Swipe;
-			Tpe.Vector = DownRight;
+			controlEvent.Kind = ControlEvent.EventKind.Swipe;
+			controlEvent.Vector = DownRight;
 			dispatchEvent = true;
 		}
 		if (dispatchEvent) {
-			if (OnChangeTrackPadState != null) {
-				OnChangeTrackPadState (Tpe);
-			}
+			SpawnEvent (controlEvent);
 		}
 	}
-
-	internal delegate void ChangeTrackPadState (TrackPadEvent e);
-	internal event ChangeTrackPadState OnChangeTrackPadState;
 
 	internal static Vector2 UpRight;
 	internal static Vector2 UpLeft;
 	internal static Vector2 DownRight;
 	internal static Vector2 DownLeft;
-}
-
-public struct TrackPadEvent {
-	public Vector2 Vector { get; set; }
-
-	public enum EventKind {
-		Touch,
-		Swipe
-	}
-	public EventKind Kind { get; set; }
-
-	public void DebugEvent () {
-		Debug.LogFormat ("down: ({0}, {1}) kind : {2}", Vector.x, Vector.y, Kind);
-	}
 }
