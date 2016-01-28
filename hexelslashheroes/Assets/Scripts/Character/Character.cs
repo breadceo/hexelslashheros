@@ -18,7 +18,8 @@ public class Character : MonoBehaviour {
 		Idle,
 		Move,
 		Attack,
-		Stiff,
+//		Stiff,
+		Fall,
 	}
 	protected CharacterState currentState;
 	protected System.Action currentStateAction;
@@ -26,12 +27,30 @@ public class Character : MonoBehaviour {
 	protected Dictionary <CharacterState, System.Action> stateMachine = new Dictionary<CharacterState, System.Action> ();
 	protected Dictionary <CharacterState, System.Action> stateEnd = new Dictionary<CharacterState, System.Action> ();
 	protected Visual visual;
+	[SerializeField] protected float rayOffsetY;
+	protected Vector3 rayOrigin {
+		get {
+			return new Vector3 (transform.position.x, transform.position.y + rayOffsetY, characterCamera.transform.position.z);
+		}
+	}
+	protected bool controllable {
+		get;
+		set;
+	}
+	[SerializeField] protected float gravitySpeed = 20f;
+	protected Vector3 gravityDir = Vector3.down;
+	protected float fallStartTime;
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
 
+		controllable = true;
+		stateMachine.Add (CharacterState.Idle, () => {
+			CheckDrop ();
+		});
 		stateMachine.Add (CharacterState.Move, () => {
 			transform.position += dir * moveSpeed * Time.deltaTime;
+			CheckDrop ();
 		});
 		stateMachine.Add (CharacterState.Attack, () => {
 			float t = (Time.time - attackStartTime) / 0.2f;
@@ -41,13 +60,25 @@ public class Character : MonoBehaviour {
 				transform.position = attackEndPoint;
 				ChangeState (CharacterState.Idle);
 			}
+			CheckDrop ();
 		});
 //		stateMachine.Add (CharacterState.Stiff, () => {
 //		});
+		stateMachine.Add (CharacterState.Fall, () => {
+			transform.position += gravityDir * gravitySpeed * Time.deltaTime;
+			if (Time.time - fallStartTime > 2f) {
+				Application.LoadLevel ("main");
+			}
+		});
 
 		stateStart.Add (CharacterState.Attack, () => {
 			visual.SetBlurs (true);
 			visual.ForcePlayAnimation (controller.CreateTrackPadEventByDirection (dir));
+		});
+		stateStart.Add (CharacterState.Fall, () => {
+			controllable = false;
+			visual.StopAnimation ();
+			fallStartTime = Time.time;
 		});
 
 		stateEnd.Add (CharacterState.Move, () => {
@@ -59,6 +90,9 @@ public class Character : MonoBehaviour {
 			dir = Vector3.zero;
 			attackStartPoint = Vector3.zero;
 			attackEndPoint = Vector3.zero;
+		});
+		stateEnd.Add (CharacterState.Fall, () => {
+			controllable = true;
 		});
 		ChangeState (CharacterState.Idle);
 	}
@@ -76,7 +110,28 @@ public class Character : MonoBehaviour {
 			currentStateAction ();
 	}
 
+	protected void CheckDrop () {
+		RaycastHit hitInfo;
+		if (Physics.Raycast (rayOrigin, Vector3.forward, out hitInfo)) {
+			if (hitInfo.collider.CompareTag ("Outside")) {
+				var outSide = hitInfo.collider.GetComponent <Outside> ();
+				if (outSide != null) {
+					outSide.enabled = true;
+					ChangeState (CharacterState.Fall);
+				}
+			}
+		}
+	}
+
+	void OnDrawGizmos () {
+		Gizmos.color = Color.yellow;
+		Gizmos.DrawRay (rayOrigin, Vector3.forward * 100f);
+	}
+
 	protected void ChangeTrackPadState (TrackPadEvent e) {
+		if (controllable == false) {
+			return;
+		}
 		if (e.Kind == TrackPadEvent.EventKind.Swipe) {
 			ChangeState (CharacterState.Move, () => {
 				dir = e.Vector;
