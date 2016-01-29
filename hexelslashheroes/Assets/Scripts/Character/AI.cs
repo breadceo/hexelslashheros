@@ -11,6 +11,8 @@ public class AI : IController, RenderObject {
 	protected Vector3 dir;
 	protected Vector3 prevDir;
 	protected bool aiEnabled = false;
+	[SerializeField] protected BoxCollider body;
+	[SerializeField] protected BoxCollider weapon;
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
@@ -67,6 +69,12 @@ public class AI : IController, RenderObject {
 				trackPositions.RemoveAt (0);
 				prevDir = dir;
 			} // else if stopped
+		}
+	}
+
+	void OnTriggerEnter (Collider other) {
+		if (other.gameObject.CompareTag ("PlayerWeapon")) {
+			Debug.Log (other.gameObject.tag);
 		}
 	}
 }

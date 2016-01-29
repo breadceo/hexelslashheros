@@ -40,6 +40,8 @@ public class Character : MonoBehaviour, RenderObject {
 	[SerializeField] protected float gravitySpeed = 20f;
 	protected Vector3 gravityDir = Vector3.down;
 	protected float fallStartTime;
+	[SerializeField] protected BoxCollider body;
+	[SerializeField] protected BoxCollider weapon;
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
@@ -74,6 +76,8 @@ public class Character : MonoBehaviour, RenderObject {
 		stateStart.Add (CharacterState.Attack, () => {
 			visual.SetBlurs (true);
 			visual.ForcePlayAnimation (controller.CreateTrackPadEventByDirection (dir));
+			body.enabled = false;
+			weapon.enabled = true;
 		});
 		stateStart.Add (CharacterState.Fall, () => {
 			controllable = false;
@@ -90,6 +94,8 @@ public class Character : MonoBehaviour, RenderObject {
 			dir = Vector3.zero;
 			attackStartPoint = Vector3.zero;
 			attackEndPoint = Vector3.zero;
+			body.enabled = true;
+			weapon.enabled = false;
 		});
 		stateEnd.Add (CharacterState.Fall, () => {
 			controllable = true;
@@ -197,5 +203,8 @@ public class Character : MonoBehaviour, RenderObject {
 		get {
 			return gameObject.transform.position;
 		}
+	}
+
+	void OnTriggerEnter (Collider other) {
 	}
 }
