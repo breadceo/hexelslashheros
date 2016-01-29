@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Character : MonoBehaviour {
+public class Character : MonoBehaviour, RenderObject {
 	[SerializeField] protected IController controller;
 	[SerializeField] protected float moveSpeed = 7.5f;
 	[SerializeField] protected Camera characterCamera;
@@ -98,10 +98,12 @@ public class Character : MonoBehaviour {
 	}
 
 	void OnEnable () {
+		RenderOrderManager.GetInstance.Register (this);
 		controller.OnChangeController += ChangeTrackPadState;
 	}
 
 	void OnDisable () {
+		RenderOrderManager.GetInstance.UnRegister (this);
 		controller.OnChangeController -= ChangeTrackPadState;
 	}
 
@@ -174,5 +176,26 @@ public class Character : MonoBehaviour {
 				initFunc ();
 		}
 		currentState = state;
+	}
+
+	public int MakeOrder (int start) {
+		var info = visual.anim.GetCurrentAnimatorStateInfo (0);
+		if (info.shortNameHash == visual.UpLeftAnimationHash || info.shortNameHash == visual.DownLeftAnimationHash) {
+			visual.bodySpr.sortingOrder = start;
+			visual.weaponSpr.sortingOrder = start + 1;
+			visual.tailSpr.sortingOrder = start + 2;
+			return start + 3;
+		} else {
+			visual.bodySpr.sortingOrder = start + 1;
+			visual.tailSpr.sortingOrder = start + 2;
+			visual.weaponSpr.sortingOrder = start;
+			return start + 3;
+		}
+	}
+
+	public Vector3 RenderObjectPosition {
+		get {
+			return gameObject.transform.position;
+		}
 	}
 }

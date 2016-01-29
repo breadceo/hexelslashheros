@@ -5,26 +5,49 @@ using System.Collections.Generic;
 [RequireComponent (typeof (Animator))]
 public class Visual : MonoBehaviour {
 	[SerializeField] protected TrackPad Controller;
-	protected Animator anim;
-	protected GameObject weapon;
-	protected SpriteRenderer weaponSpr;
+	public Animator anim;
+	public SpriteRenderer bodySpr;
+	public SpriteRenderer tailSpr;
+	public SpriteRenderer weaponSpr;
 	protected List<MotionBlur> blurs;
 
+	public int UpRightAnimationHash {
+		get;
+		private set;
+	}
+	public int UpLeftAnimationHash {
+		get;
+		private set;
+	}
+	public int DownRightAnimationHash {
+		get;
+		private set;
+	}
+	public int DownLeftAnimationHash {
+		get;
+		private set;
+	}
+
 	void Awake () {
-		weapon = transform.Find ("Weapon").gameObject;
+		UpRightAnimationHash = Animator.StringToHash ("UpRight");
+		UpLeftAnimationHash = Animator.StringToHash ("UpLeft");
+		DownRightAnimationHash = Animator.StringToHash ("DownRight");
+		DownLeftAnimationHash = Animator.StringToHash ("DownLeft");
+
+		var weapon = transform.Find ("Weapon").gameObject;
 		weaponSpr = weapon.GetComponent <SpriteRenderer> ();
+		var body = transform.Find ("Body").gameObject;
+		bodySpr = body.GetComponent <SpriteRenderer> ();
+		var tail = transform.Find ("Tail").gameObject;
+		tailSpr = tail.GetComponent <SpriteRenderer> ();
 		anim = GetComponent <Animator> ();
 		blurs = new List<MotionBlur> ();
-		blurs.Add (transform.Find ("Body").GetComponent <MotionBlur> ());
-		blurs.Add (transform.Find ("Tail").GetComponent <MotionBlur> ());
-		blurs.Add (transform.Find ("Weapon").GetComponent <MotionBlur> ());
+		blurs.Add (body.GetComponent <MotionBlur> ());
+		blurs.Add (tail.GetComponent <MotionBlur> ());
+		blurs.Add (weapon.GetComponent <MotionBlur> ());
 		SetBlurs (false);
 	}
 
-	public void ChangeWeaponOrder (int order) {
-		weaponSpr.sortingOrder = order;
-	}
-	
 	void OnEnable () {
 		Controller.OnChangeController += ChangeTrackPadState;
 		anim.enabled = false;
@@ -38,16 +61,16 @@ public class Visual : MonoBehaviour {
 		if (e.Kind == ControlEvent.EventKind.Swipe) {
 			anim.enabled = true;
 			if (e.Vector == TrackPad.UpRight) {
-				anim.Play ("UpRight", 0, 0f);
+				anim.Play (UpRightAnimationHash, 0, 0f);
 				blurs.ForEach (b => b.offset = new Vector3 (0, 0, -1));
 			} else if (e.Vector == TrackPad.UpLeft) {
-				anim.Play ("UpLeft", 0, 0f);
+				anim.Play (UpLeftAnimationHash, 0, 0f);
 				blurs.ForEach (b => b.offset = new Vector3 (0, 0, -1));
 			} else if (e.Vector == TrackPad.DownRight) {
-				anim.Play ("DownRight", 0, 0f);
+				anim.Play (DownRightAnimationHash, 0, 0f);
 				blurs.ForEach (b => b.offset = new Vector3 (0, 0, 1));
 			} else if (e.Vector == TrackPad.DownLeft) {
-				anim.Play ("DownLeft", 0, 0f);
+				anim.Play (DownLeftAnimationHash, 0, 0f);
 				blurs.ForEach (b => b.offset = new Vector3 (0, 0, 1));
 			}
 		}
