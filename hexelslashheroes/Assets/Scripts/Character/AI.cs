@@ -21,10 +21,12 @@ public class AI : IController, RenderObject {
 
 	void OnEnable () {
 		RenderOrderManager.GetInstance.Register (this);
+		GameManager.GetInstance.OnHitOccurs += OnHitOccurs;
 	}
 
 	void OnDisable () {
 		RenderOrderManager.GetInstance.UnRegister (this);
+		GameManager.GetInstance.OnHitOccurs -= OnHitOccurs;
 	}
 
 	public override ControlEvent CreateTrackPadEventByDirection (Vector3 dir) {
@@ -57,7 +59,6 @@ public class AI : IController, RenderObject {
 
 	void Update () {
 		if (aiEnabled) {
-			Debug.Log (aiEnabled);
 			trackPositions.Add (trackCharacter.transform.position);
 			if (trackPositions.Count > trackOffset) {
 				var diff = trackPositions [1] - trackPositions [0];
@@ -74,7 +75,19 @@ public class AI : IController, RenderObject {
 
 	void OnTriggerEnter (Collider other) {
 		if (other.gameObject.CompareTag ("PlayerWeapon")) {
-			Debug.Log (other.gameObject.tag);
+			GameManager.GetInstance.InvokeHitEvent (other.gameObject, gameObject);
+		}
+	}
+
+	// TODO: after write effectmanager, move this code.
+	void OnHitOccurs (GameObject player, GameObject enemy) {
+		var ec = player.GetComponentInParent <EffectContainer> ();
+		if (ec != null) {
+			var particle = GameObject.Instantiate (ec.hit) as GameObject;
+			particle.SetActive (true);
+			var system = particle.GetComponent <ParticleSystem> ();
+			system.Stop ();
+			system.Play ();
 		}
 	}
 }

@@ -118,9 +118,10 @@ public class Character : MonoBehaviour, RenderObject {
 			currentStateAction ();
 	}
 
+	const int BackgroundLayerMask = 1 << 8;
 	protected void CheckDrop () {
 		RaycastHit hitInfo;
-		if (Physics.Raycast (rayOrigin, Vector3.forward, out hitInfo)) {
+		if (Physics.Raycast (rayOrigin, Vector3.forward, out hitInfo, 100f, BackgroundLayerMask)) {
 			if (hitInfo.collider.CompareTag ("Outside")) {
 				var outSide = hitInfo.collider.GetComponent <Outside> ();
 				if (outSide != null) {
@@ -206,5 +207,8 @@ public class Character : MonoBehaviour, RenderObject {
 	}
 
 	void OnTriggerEnter (Collider other) {
+		if (other.gameObject.CompareTag ("EnemyWeapon")) {
+			GameManager.GetInstance.InvokeHitEvent (other.gameObject, gameObject);
+		}
 	}
 }
