@@ -10,9 +10,11 @@ public class AI : IController, RenderObject {
 	protected List <Vector3> trackPositions = new List<Vector3> ();
 	protected Vector3 dir;
 	protected Vector3 prevDir;
+	protected bool aiEnabled = false;
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
+		visual.SetBlurs (false);
 	}
 
 	void OnEnable () {
@@ -52,16 +54,19 @@ public class AI : IController, RenderObject {
 	}
 
 	void Update () {
-		trackPositions.Add (trackCharacter.transform.position);
-		if (trackPositions.Count > trackOffset) {
-			var diff = trackPositions [1] - trackPositions [0];
-			dir = diff.normalized;
-			if (prevDir != dir) {
-				visual.ForcePlayAnimation (CreateTrackPadEventByDirection (dir));
-			}
-			transform.position = trackPositions.First <Vector3> () - dir * 0.25f;
-			trackPositions.RemoveAt (0);
-			prevDir = dir;
-		} // else if stopped
+		if (aiEnabled) {
+			Debug.Log (aiEnabled);
+			trackPositions.Add (trackCharacter.transform.position);
+			if (trackPositions.Count > trackOffset) {
+				var diff = trackPositions [1] - trackPositions [0];
+				dir = diff.normalized;
+				if (prevDir != dir) {
+					visual.ForcePlayAnimation (CreateTrackPadEventByDirection (dir));
+				}
+				transform.position = trackPositions.First <Vector3> () - dir * 0.25f;
+				trackPositions.RemoveAt (0);
+				prevDir = dir;
+			} // else if stopped
+		}
 	}
 }

@@ -4,12 +4,12 @@ using System.Collections.Generic;
 
 [RequireComponent (typeof (Animator))]
 public class Visual : MonoBehaviour {
-	[SerializeField] protected TrackPad Controller;
+	[SerializeField] protected IController Controller;
 	public Animator anim;
 	public SpriteRenderer bodySpr;
 	public SpriteRenderer tailSpr;
 	public SpriteRenderer weaponSpr;
-	protected List<MotionBlur> blurs;
+	protected List<MotionBlur> blurs = new List<MotionBlur> ();
 
 	public int UpRightAnimationHash {
 		get;
@@ -41,10 +41,18 @@ public class Visual : MonoBehaviour {
 		var tail = transform.Find ("Tail").gameObject;
 		tailSpr = tail.GetComponent <SpriteRenderer> ();
 		anim = GetComponent <Animator> ();
-		blurs = new List<MotionBlur> ();
-		blurs.Add (body.GetComponent <MotionBlur> ());
-		blurs.Add (tail.GetComponent <MotionBlur> ());
-		blurs.Add (weapon.GetComponent <MotionBlur> ());
+		var bodyBlur = body.GetComponent <MotionBlur> ();
+		if (bodyBlur) {
+			blurs.Add (bodyBlur);
+		}
+		var tailBlur = tail.GetComponent <MotionBlur> ();
+		if (tailBlur) {
+			blurs.Add (tailBlur);
+		}
+		var weaponBlur = weapon.GetComponent <MotionBlur> ();
+		if (weaponBlur) {
+			blurs.Add (weaponBlur);
+		}
 		SetBlurs (false);
 	}
 
