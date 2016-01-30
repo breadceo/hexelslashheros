@@ -37,16 +37,20 @@ public class AI : IController, RenderObject {
 	}
 
 	public int MakeOrder (int start) {
-		var info = visual.anim.GetCurrentAnimatorStateInfo (0);
-		if (info.shortNameHash == visual.UpLeftAnimationHash || info.shortNameHash == visual.DownLeftAnimationHash) {
-			visual.bodySpr.sortingOrder = start;
-			visual.weaponSpr.sortingOrder = start + 1;
-			visual.tailSpr.sortingOrder = start + 2;
-			return start + 3;
+		if (visual.anim.enabled) {
+			var info = visual.anim.GetCurrentAnimatorStateInfo (0);
+			if (info.shortNameHash == visual.UpRightAnimationHash || info.shortNameHash == visual.DownRightAnimationHash) {
+				visual.bodySpr.sortingOrder = start + 1;
+				visual.tailSpr.sortingOrder = start + 2;
+				visual.weaponSpr.sortingOrder = start;
+				return start + 3;
+			} else {
+				visual.bodySpr.sortingOrder = start;
+				visual.weaponSpr.sortingOrder = start + 1;
+				visual.tailSpr.sortingOrder = start + 2;
+				return start + 3;
+			}
 		} else {
-			visual.bodySpr.sortingOrder = start + 1;
-			visual.tailSpr.sortingOrder = start + 2;
-			visual.weaponSpr.sortingOrder = start;
 			return start + 3;
 		}
 	}

@@ -25,5 +25,6 @@ public class GameManager : MonoBehaviour {
 		if (OnHitOccurs != null) {
 			OnHitOccurs (player, enemy);
 		}
+		GameSpeedManager.GetInstance.RequestTimeStop (0.05f, 0.05f, 0.2f);
 	}
 }
