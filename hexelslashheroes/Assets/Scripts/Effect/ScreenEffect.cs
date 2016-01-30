@@ -14,11 +14,11 @@ public class ScreenEffect : MonoBehaviour {
 		GameManager.GetInstance.OnHitOccurs -= OnHitOccurs;
 	}
 
-	void OnHitOccurs (GameObject player, GameObject enemy) {
+	void OnHitOccurs (GameObject attacker, GameObject defender) {
 		if (focusCoroutine != null) {
 			StopCoroutine (focusCoroutine);
 		}
-		var character = player.GetComponentInParent <Character> ();
+		var character = attacker.GetComponentInParent <Character> ();
 		var dir = new Vector3 (character.Dir.x, character.Dir.y, 0f).normalized;
 		focusCoroutine = StartCoroutine (Focus (0.1f, dir, 0.15f));
 	}

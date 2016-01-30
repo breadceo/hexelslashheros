@@ -37,27 +37,23 @@ public class AI : IController, RenderObject {
 	}
 
 	public int MakeOrder (int start) {
-		if (visual.anim.enabled) {
-			var info = visual.anim.GetCurrentAnimatorStateInfo (0);
-			if (info.shortNameHash == visual.UpRightAnimationHash || info.shortNameHash == visual.DownRightAnimationHash) {
-				visual.bodySpr.sortingOrder = start + 1;
-				visual.tailSpr.sortingOrder = start + 2;
-				visual.weaponSpr.sortingOrder = start;
-				return start + 3;
-			} else {
-				visual.bodySpr.sortingOrder = start;
-				visual.weaponSpr.sortingOrder = start + 1;
-				visual.tailSpr.sortingOrder = start + 2;
-				return start + 3;
-			}
+		var info = visual.anim.GetCurrentAnimatorStateInfo (0);
+		if (info.shortNameHash == visual.UpRightAnimationHash || info.shortNameHash == visual.DownRightAnimationHash) {
+			visual.bodySpr.sortingOrder = start + 1;
+			visual.tailSpr.sortingOrder = start + 2;
+			visual.weaponSpr.sortingOrder = start;
+			return start + 3;
 		} else {
+			visual.bodySpr.sortingOrder = start;
+			visual.weaponSpr.sortingOrder = start + 1;
+			visual.tailSpr.sortingOrder = start + 2;
 			return start + 3;
 		}
 	}
 
-	public Vector3 RenderObjectPosition {
+	public GameObject Target {
 		get {
-			return gameObject.transform.position;
+			return gameObject;
 		}
 	}
 
@@ -84,14 +80,18 @@ public class AI : IController, RenderObject {
 	}
 
 	// TODO: after write effectmanager, move this code.
-	void OnHitOccurs (GameObject player, GameObject enemy) {
-		var ec = player.GetComponentInParent <EffectContainer> ();
-		if (ec != null) {
-			var particle = GameObject.Instantiate (ec.hit) as GameObject;
-			particle.SetActive (true);
-			var system = particle.GetComponent <ParticleSystem> ();
-			system.Stop ();
-			system.Play ();
+	void OnHitOccurs (GameObject attacker, GameObject defender) {
+		var ai = defender.GetComponentInParent <AI> ();
+		if (ai == this) {
+			var ec = attacker.GetComponentInParent <EffectContainer> ();
+			if (ec != null) {
+				var particle = GameObject.Instantiate (ec.hit) as GameObject;
+				particle.SetActive (true);
+				particle.transform.position = transform.position;
+				var system = particle.GetComponent <ParticleSystem> ();
+				system.Stop ();
+				system.Play ();
+			}
 		}
 	}
 }

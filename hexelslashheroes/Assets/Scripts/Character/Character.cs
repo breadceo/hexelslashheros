@@ -30,6 +30,7 @@ public class Character : MonoBehaviour, RenderObject {
 	protected Dictionary <CharacterState, System.Action> stateStart = new Dictionary<CharacterState, System.Action> ();
 	protected Dictionary <CharacterState, System.Action> stateMachine = new Dictionary<CharacterState, System.Action> ();
 	protected Dictionary <CharacterState, System.Action> stateEnd = new Dictionary<CharacterState, System.Action> ();
+	protected Dictionary <CharacterState, List<CharacterState>> transitable = new Dictionary<CharacterState, List<CharacterState>> ();
 	protected Visual visual;
 	[SerializeField] protected float rayOffsetY;
 	protected Vector3 rayOrigin {
@@ -49,6 +50,11 @@ public class Character : MonoBehaviour, RenderObject {
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
+
+		transitable.Add (CharacterState.Idle, new List<CharacterState> { CharacterState.Attack, CharacterState.Fall, CharacterState.Move });
+		transitable.Add (CharacterState.Attack, new List<CharacterState> { CharacterState.Fall, CharacterState.Idle });
+		transitable.Add (CharacterState.Move, new List<CharacterState> { CharacterState.Attack, CharacterState.Fall, CharacterState.Idle, CharacterState.Move });
+		transitable.Add (CharacterState.Fall, new List<CharacterState> { });
 
 		controllable = true;
 		stateMachine.Add (CharacterState.Idle, () => {
@@ -131,12 +137,9 @@ public class Character : MonoBehaviour, RenderObject {
 					ChangeState (CharacterState.Fall);
 				}
 			}
+		} else {
+			ChangeState (CharacterState.Fall);
 		}
-	}
-
-	void OnDrawGizmos () {
-		Gizmos.color = Color.yellow;
-		Gizmos.DrawRay (rayOrigin, Vector3.forward * 100f);
 	}
 
 	protected void ChangeTrackPadState (ControlEvent e) {
@@ -160,31 +163,37 @@ public class Character : MonoBehaviour, RenderObject {
 	}
 
 	protected void ChangeState (CharacterState state, System.Action initFunc = null) {
-		if (currentState != state) {
-			System.Action stateEndFunc;
-			if (stateEnd.TryGetValue (currentState, out stateEndFunc) == false) {
-				stateEndFunc = null;
-			}
-			if (stateEndFunc != null) {
-				stateEndFunc ();
-			}
-			if (initFunc != null)
-				initFunc ();
-			System.Action stateStartFunc;
-			if (stateStart.TryGetValue (state, out stateStartFunc) == false) {
-				stateStartFunc = null;
-			}
-			if (stateStartFunc != null) {
-				stateStartFunc ();
-			}
-			if (stateMachine.TryGetValue (state, out currentStateAction) == false) {
-				currentStateAction = null;
-			}
-		} else {
-			if (initFunc != null)
-				initFunc ();
+		List<CharacterState> can;
+		if (transitable.TryGetValue (currentState, out can) == false) {
+			throw new System.InvalidProgramException ("cannot find transitable list");
 		}
-		currentState = state;
+		if (can.FindIndex (s => s == state) != -1) {
+			if (currentState != state) {
+				System.Action stateEndFunc;
+				if (stateEnd.TryGetValue (currentState, out stateEndFunc) == false) {
+					stateEndFunc = null;
+				}
+				if (stateEndFunc != null) {
+					stateEndFunc ();
+				}
+				if (initFunc != null)
+					initFunc ();
+				System.Action stateStartFunc;
+				if (stateStart.TryGetValue (state, out stateStartFunc) == false) {
+					stateStartFunc = null;
+				}
+				if (stateStartFunc != null) {
+					stateStartFunc ();
+				}
+				if (stateMachine.TryGetValue (state, out currentStateAction) == false) {
+					currentStateAction = null;
+				}
+			} else {
+				if (initFunc != null)
+					initFunc ();
+			}
+			currentState = state;
+		}
 	}
 
 	public int MakeOrder (int start) {
@@ -206,9 +215,9 @@ public class Character : MonoBehaviour, RenderObject {
 		}
 	}
 
-	public Vector3 RenderObjectPosition {
+	public GameObject Target {
 		get {
-			return gameObject.transform.position;
+			return gameObject;
 		}
 	}
 

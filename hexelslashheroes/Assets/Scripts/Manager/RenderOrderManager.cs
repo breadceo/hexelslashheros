@@ -11,6 +11,11 @@ public class RenderOrderManager : MonoBehaviour {
 	}
 	protected static RenderOrderManager _instance;
 	protected List<RenderObject> objects = new List<RenderObject> ();
+	public List<RenderObject> Objects {
+		get {
+			return objects;
+		}
+	}
 
 	void Awake () {
 		_instance = this;
@@ -20,13 +25,14 @@ public class RenderOrderManager : MonoBehaviour {
 		_instance = null;
 	}
 
+	static protected Vector3 basePosition = new Vector3 (0f, 1000f, 0f);
 	void Update () {
-		var sorted = objects.OrderByDescending (o => {
-			return o.RenderObjectPosition.y;
+		objects = objects.OrderBy (o => {
+			return Vector3.Distance (basePosition, o.Target.transform.position);
 		}).ToList <RenderObject> ();
 
 		int startOrder = 0;
-		foreach (var ro in sorted) {
+		foreach (var ro in objects) {
 			startOrder = ro.MakeOrder (startOrder);
 		}
 	}
@@ -42,5 +48,5 @@ public class RenderOrderManager : MonoBehaviour {
 
 public interface RenderObject {
 	int MakeOrder (int start);
-	Vector3 RenderObjectPosition { get; }
+	GameObject Target { get; }
 }

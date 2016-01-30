@@ -17,13 +17,13 @@ public class GameManager : MonoBehaviour {
 		_instance = null;
 	}
 
-	public delegate void HitOccurs (GameObject player, GameObject enemy);
+	public delegate void HitOccurs (GameObject attacker, GameObject defender);
 	public event HitOccurs OnHitOccurs;
 
-	public void InvokeHitEvent (GameObject player, GameObject enemy) {
+	public void InvokeHitEvent (GameObject attacker, GameObject defender) {
 		// INFO: player doesn't have character component, it's just weapon collider.
 		if (OnHitOccurs != null) {
-			OnHitOccurs (player, enemy);
+			OnHitOccurs (attacker, defender);
 		}
 		GameSpeedManager.GetInstance.RequestTimeStop (0.05f, 0.05f, 0.2f);
 	}
