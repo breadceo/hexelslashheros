@@ -7,11 +7,13 @@ public class ScreenEffect : MonoBehaviour {
 	protected Coroutine focusCoroutine;
 
 	void OnEnable () {
+		Debug.Assert (GameManager.GetInstance != null);
 		GameManager.GetInstance.OnHitOccurs += OnHitOccurs;
 	}
 
 	void OnDisable () {
-		GameManager.GetInstance.OnHitOccurs -= OnHitOccurs;
+		if (GameManager.GetInstance != null)
+			GameManager.GetInstance.OnHitOccurs -= OnHitOccurs;
 	}
 
 	void OnHitOccurs (GameObject attacker, GameObject defender) {
@@ -20,7 +22,7 @@ public class ScreenEffect : MonoBehaviour {
 		}
 		var character = attacker.GetComponentInParent <Character> ();
 		var dir = new Vector3 (character.Dir.x, character.Dir.y, 0f).normalized;
-		focusCoroutine = StartCoroutine (Focus (0.1f, dir, 0.15f));
+		focusCoroutine = StartCoroutine (Focus (0.1f, dir, 0.0f));
 	}
 
 	IEnumerator Focus (float timeToFocus, Vector3 focusDir, float fadeOut) {

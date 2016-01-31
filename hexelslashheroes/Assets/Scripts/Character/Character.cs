@@ -47,12 +47,13 @@ public class Character : MonoBehaviour, RenderObject {
 	protected float fallStartTime;
 	[SerializeField] protected BoxCollider body;
 	[SerializeField] protected BoxCollider weapon;
+	[SerializeField] protected TrailController trailController;
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
 
 		transitable.Add (CharacterState.Idle, new List<CharacterState> { CharacterState.Attack, CharacterState.Fall, CharacterState.Move });
-		transitable.Add (CharacterState.Attack, new List<CharacterState> { CharacterState.Fall, CharacterState.Idle });
+		transitable.Add (CharacterState.Attack, new List<CharacterState> { CharacterState.Attack, CharacterState.Fall, CharacterState.Idle });
 		transitable.Add (CharacterState.Move, new List<CharacterState> { CharacterState.Attack, CharacterState.Fall, CharacterState.Idle, CharacterState.Move });
 		transitable.Add (CharacterState.Fall, new List<CharacterState> { });
 
@@ -83,9 +84,8 @@ public class Character : MonoBehaviour, RenderObject {
 
 		stateStart.Add (CharacterState.Attack, () => {
 			visual.SetBlurs (true);
-			visual.ForcePlayAnimation (controller.CreateTrackPadEventByDirection (dir));
-			body.enabled = false;
 			weapon.enabled = true;
+			trailController.gameObject.SetActive (true);
 		});
 		stateStart.Add (CharacterState.Fall, () => {
 			controllable = false;
@@ -102,8 +102,8 @@ public class Character : MonoBehaviour, RenderObject {
 			dir = Vector3.zero;
 			attackStartPoint = Vector3.zero;
 			attackEndPoint = Vector3.zero;
-			body.enabled = true;
 			weapon.enabled = false;
+			trailController.gameObject.SetActive (false);
 		});
 		stateEnd.Add (CharacterState.Fall, () => {
 			controllable = true;
@@ -121,7 +121,7 @@ public class Character : MonoBehaviour, RenderObject {
 		controller.OnChangeController -= ChangeTrackPadState;
 	}
 
-	protected void Update () {
+	void Update () {
 		if (currentStateAction != null)
 			currentStateAction ();
 	}
@@ -158,6 +158,7 @@ public class Character : MonoBehaviour, RenderObject {
 				var clickPoint = new Vector3 (worldPosition.x, worldPosition.y, transform.position.z);
 				dir = (clickPoint - attackStartPoint).normalized;
 				attackEndPoint = attackStartPoint + dir * attackRange;
+				visual.ForcePlayAnimation (controller.CreateTrackPadEventByDirection (dir));
 			});
 		}
 	}
@@ -203,15 +204,17 @@ public class Character : MonoBehaviour, RenderObject {
 				visual.bodySpr.sortingOrder = start + 1;
 				visual.tailSpr.sortingOrder = start + 2;
 				visual.weaponSpr.sortingOrder = start;
-				return start + 3;
+				trailController.SetSortingOrder (start + 3);
+				return start + 4;
 			} else {
 				visual.bodySpr.sortingOrder = start;
 				visual.weaponSpr.sortingOrder = start + 1;
 				visual.tailSpr.sortingOrder = start + 2;
-				return start + 3;
+				trailController.SetSortingOrder (start + 3);
+				return start + 4;
 			}
 		} else {
-			return start + 3;
+			return start + 4;
 		}
 	}
 
