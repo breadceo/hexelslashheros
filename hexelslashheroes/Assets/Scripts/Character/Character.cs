@@ -27,6 +27,8 @@ public class Character : MonoBehaviour, RenderObject {
 	}
 	protected CharacterState currentState;
 	protected System.Action currentStateAction;
+	protected CharacterState? nextState;
+	protected System.Action nextStateInitAction;
 	protected Dictionary <CharacterState, System.Action> stateStart = new Dictionary<CharacterState, System.Action> ();
 	protected Dictionary <CharacterState, System.Action> stateMachine = new Dictionary<CharacterState, System.Action> ();
 	protected Dictionary <CharacterState, System.Action> stateEnd = new Dictionary<CharacterState, System.Action> ();
@@ -71,7 +73,7 @@ public class Character : MonoBehaviour, RenderObject {
 			transform.position = Vector3.Lerp (attackStartPoint, attackEndPoint, t);
 			if (t >= 1f) {
 				transform.position = attackEndPoint;
-				ChangeState (CharacterState.Idle);
+				RequestChangeState (CharacterState.Idle);
 			}
 			CheckBlock ();
 		});
@@ -101,7 +103,7 @@ public class Character : MonoBehaviour, RenderObject {
 
 		trailController.gameObject.SetActive (false);
 
-		ChangeState (CharacterState.Idle);
+		ChangeState (CharacterState.Idle, () => {});
 	}
 
 	void OnEnable () {
@@ -115,6 +117,9 @@ public class Character : MonoBehaviour, RenderObject {
 	}
 
 	void Update () {
+		if (nextState.HasValue) {
+			ChangeState (nextState.Value, nextStateInitAction);
+		}
 		if (currentStateAction != null)
 			currentStateAction ();
 	}
@@ -126,7 +131,7 @@ public class Character : MonoBehaviour, RenderObject {
 			transform.position.z);
 		if (pos != transform.position) {
 			transform.position = pos;
-			ChangeState (CharacterState.Stuck);
+			RequestChangeState (CharacterState.Stuck);
 		}
 	}
 
@@ -140,11 +145,11 @@ public class Character : MonoBehaviour, RenderObject {
 			return;
 		}
 		if (e.Kind == ControlEvent.EventKind.Swipe) {
-			ChangeState (CharacterState.Move, () => {
+			RequestChangeState (CharacterState.Move, () => {
 				dir = e.Vector;
 			});
 		} else if (e.Kind == ControlEvent.EventKind.Touch) {
-			ChangeState (CharacterState.Attack, () => {
+			RequestChangeState (CharacterState.Attack, () => {
 				attackStartTime = Time.time;
 				attackStartPoint = transform.position;
 				var worldPosition = characterCamera.ScreenToWorldPoint (e.Vector);
@@ -156,7 +161,7 @@ public class Character : MonoBehaviour, RenderObject {
 		}
 	}
 
-	protected void ChangeState (CharacterState state, System.Action initFunc = null) {
+	protected void ChangeState (CharacterState state, System.Action initFunc) {
 		List<CharacterState> can;
 		if (transitable.TryGetValue (currentState, out can) == false) {
 			throw new System.InvalidProgramException ("cannot find transitable list");
@@ -187,7 +192,13 @@ public class Character : MonoBehaviour, RenderObject {
 					initFunc ();
 			}
 			currentState = state;
+			nextState = null;
 		}
+	}
+
+	protected void RequestChangeState (CharacterState state, System.Action initFunc = null) {
+		nextState = state;
+		nextStateInitAction = initFunc;
 	}
 
 	public int MakeOrder (int start) {
