@@ -23,7 +23,7 @@ public class Character : MonoBehaviour, RenderObject {
 		Idle,
 		Move,
 		Attack,
-		Fall,
+		Stuck,
 	}
 	protected CharacterState currentState;
 	protected System.Action currentStateAction;
@@ -32,10 +32,9 @@ public class Character : MonoBehaviour, RenderObject {
 	protected Dictionary <CharacterState, System.Action> stateEnd = new Dictionary<CharacterState, System.Action> ();
 	protected Dictionary <CharacterState, List<CharacterState>> transitable = new Dictionary<CharacterState, List<CharacterState>> ();
 	protected Visual visual;
-	[SerializeField] protected float rayOffsetY;
 	protected Vector3 rayOrigin {
 		get {
-			return new Vector3 (transform.position.x, transform.position.y + rayOffsetY, characterCamera.transform.position.z);
+			return new Vector3 (transform.position.x, transform.position.y, characterCamera.transform.position.z);
 		}
 	}
 	protected bool controllable {
@@ -48,22 +47,23 @@ public class Character : MonoBehaviour, RenderObject {
 	[SerializeField] protected BoxCollider body;
 	[SerializeField] protected BoxCollider weapon;
 	[SerializeField] protected TrailController trailController;
+	[SerializeField] protected BoxCollider map;
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
 
-		transitable.Add (CharacterState.Idle, new List<CharacterState> { CharacterState.Attack, CharacterState.Fall, CharacterState.Move });
-		transitable.Add (CharacterState.Attack, new List<CharacterState> { CharacterState.Attack, CharacterState.Fall, CharacterState.Idle });
-		transitable.Add (CharacterState.Move, new List<CharacterState> { CharacterState.Attack, CharacterState.Fall, CharacterState.Idle, CharacterState.Move });
-		transitable.Add (CharacterState.Fall, new List<CharacterState> { });
+		transitable.Add (CharacterState.Idle, new List<CharacterState> { CharacterState.Attack, CharacterState.Move, CharacterState.Stuck });
+		transitable.Add (CharacterState.Attack, new List<CharacterState> { CharacterState.Attack, CharacterState.Idle, CharacterState.Stuck });
+		transitable.Add (CharacterState.Move, new List<CharacterState> { CharacterState.Attack, CharacterState.Idle, CharacterState.Move, CharacterState.Stuck });
+		transitable.Add (CharacterState.Stuck, new List<CharacterState> { CharacterState.Attack, CharacterState.Idle, CharacterState.Move });
 
 		controllable = true;
 		stateMachine.Add (CharacterState.Idle, () => {
-			CheckDrop ();
+			CheckBlock ();
 		});
 		stateMachine.Add (CharacterState.Move, () => {
 			transform.position += dir * moveSpeed * Time.deltaTime;
-			CheckDrop ();
+			CheckBlock ();
 		});
 		stateMachine.Add (CharacterState.Attack, () => {
 			float t = (Time.time - attackStartTime) / 0.2f;
@@ -73,13 +73,9 @@ public class Character : MonoBehaviour, RenderObject {
 				transform.position = attackEndPoint;
 				ChangeState (CharacterState.Idle);
 			}
-			CheckDrop ();
+			CheckBlock ();
 		});
-		stateMachine.Add (CharacterState.Fall, () => {
-			transform.position += gravityDir * gravitySpeed * Time.deltaTime;
-			if (Time.time - fallStartTime > 2f) {
-				Application.LoadLevel ("main");
-			}
+		stateMachine.Add (CharacterState.Stuck, () => {
 		});
 
 		stateStart.Add (CharacterState.Attack, () => {
@@ -87,10 +83,7 @@ public class Character : MonoBehaviour, RenderObject {
 			weapon.enabled = true;
 			trailController.gameObject.SetActive (true);
 		});
-		stateStart.Add (CharacterState.Fall, () => {
-			controllable = false;
-			visual.StopAnimation ();
-			fallStartTime = Time.time;
+		stateStart.Add (CharacterState.Stuck, () => {
 		});
 
 		stateEnd.Add (CharacterState.Move, () => {
@@ -105,9 +98,9 @@ public class Character : MonoBehaviour, RenderObject {
 			weapon.enabled = false;
 			trailController.gameObject.SetActive (false);
 		});
-		stateEnd.Add (CharacterState.Fall, () => {
-			controllable = true;
-		});
+
+		trailController.gameObject.SetActive (false);
+
 		ChangeState (CharacterState.Idle);
 	}
 
@@ -127,20 +120,20 @@ public class Character : MonoBehaviour, RenderObject {
 	}
 
 	const int BackgroundLayerMask = 1 << 8;
-	protected void CheckDrop () {
-		RaycastHit hitInfo;
-		if (Physics.Raycast (rayOrigin, Vector3.forward, out hitInfo, 100f, BackgroundLayerMask)) {
-			if (hitInfo.collider.CompareTag ("Outside")) {
-				var outSide = hitInfo.collider.GetComponent <Outside> ();
-				if (outSide != null) {
-					outSide.enabled = true;
-					ChangeState (CharacterState.Fall);
-				}
-			}
-		} else {
-			ChangeState (CharacterState.Fall);
+	protected void CheckBlock () {
+		Vector3 pos = new Vector3 (Mathf.Clamp (transform.position.x, map.bounds.min.x, map.bounds.max.x),
+			Mathf.Clamp (transform.position.y, map.bounds.min.y, map.bounds.max.y),
+			transform.position.z);
+		if (pos != transform.position) {
+			transform.position = pos;
+			ChangeState (CharacterState.Stuck);
 		}
 	}
+
+//	protected void OnDrawGizmos () {
+//		Gizmos.color = Color.yellow;
+//		Gizmos.DrawCube (map.center, map.bounds.size);
+//	}
 
 	protected void ChangeTrackPadState (ControlEvent e) {
 		if (controllable == false) {
