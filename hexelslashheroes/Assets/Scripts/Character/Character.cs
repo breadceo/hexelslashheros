@@ -49,7 +49,6 @@ public class Character : MonoBehaviour, RenderObject {
 	[SerializeField] protected BoxCollider body;
 	[SerializeField] protected BoxCollider weapon;
 	[SerializeField] protected TrailController trailController;
-	[SerializeField] protected BoxCollider map;
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
@@ -101,9 +100,15 @@ public class Character : MonoBehaviour, RenderObject {
 			trailController.gameObject.SetActive (false);
 		});
 
-		trailController.gameObject.SetActive (false);
+		Init ();
+	}
 
-		ChangeState (CharacterState.Idle, () => {});
+	public void Init () {
+		controllable = true;
+		trailController.gameObject.SetActive (false);
+		ChangeState (CharacterState.Idle, () => {
+			visual.StopAnimation ();
+		});
 	}
 
 	void OnEnable () {
@@ -124,13 +129,8 @@ public class Character : MonoBehaviour, RenderObject {
 			currentStateAction ();
 	}
 
-	const int BackgroundLayerMask = 1 << 8;
 	protected void CheckBlock () {
-		Vector3 pos = new Vector3 (Mathf.Clamp (transform.position.x, map.bounds.min.x, map.bounds.max.x),
-			Mathf.Clamp (transform.position.y, map.bounds.min.y, map.bounds.max.y),
-			transform.position.z);
-		if (pos != transform.position) {
-			transform.position = pos;
+		if (StageManager.GetInstance.currentStage.CheckBlocked (gameObject)) {
 			RequestChangeState (CharacterState.Stuck);
 		}
 	}
@@ -164,7 +164,7 @@ public class Character : MonoBehaviour, RenderObject {
 	protected void ChangeState (CharacterState state, System.Action initFunc) {
 		List<CharacterState> can;
 		if (transitable.TryGetValue (currentState, out can) == false) {
-			throw new System.InvalidProgramException ("cannot find transitable list");
+			throw new UnityException ("cannot find transitable list");
 		}
 		if (can.FindIndex (s => s == state) != -1) {
 			if (currentState != state) {
@@ -231,6 +231,8 @@ public class Character : MonoBehaviour, RenderObject {
 	void OnTriggerEnter (Collider other) {
 		if (other.gameObject.CompareTag ("EnemyWeapon")) {
 			GameManager.GetInstance.InvokeHitEvent (other.gameObject, gameObject);
+		} else if (other.gameObject.CompareTag ("Door")) {
+			GameManager.GetInstance.InvokeNextStageEvent ();
 		}
 	}
 }
