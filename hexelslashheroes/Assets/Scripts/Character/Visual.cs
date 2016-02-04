@@ -3,12 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 
 [RequireComponent (typeof (Animator))]
-public class Visual : MonoBehaviour {
+public class Visual : MonoBehaviour, RenderObject {
 	[SerializeField] protected IController Controller;
-	public Animator anim;
-	public SpriteRenderer bodySpr;
-	public SpriteRenderer tailSpr;
-	public SpriteRenderer weaponSpr;
+	[SerializeField] protected List<SortingOrderable> leftOrder = new List<SortingOrderable> ();
+	[SerializeField] protected List<SortingOrderable> rightOrder = new List<SortingOrderable> ();
+	protected Animator anim;
 
 	public int UpRightAnimationHash {
 		get;
@@ -32,22 +31,17 @@ public class Visual : MonoBehaviour {
 		UpLeftAnimationHash = Animator.StringToHash ("UpLeft");
 		DownRightAnimationHash = Animator.StringToHash ("DownRight");
 		DownLeftAnimationHash = Animator.StringToHash ("DownLeft");
-
-		var weapon = transform.Find ("Weapon").gameObject;
-		weaponSpr = weapon.GetComponent <SpriteRenderer> ();
-		var body = transform.Find ("Body").gameObject;
-		bodySpr = body.GetComponent <SpriteRenderer> ();
-		var tail = transform.Find ("Tail").gameObject;
-		tailSpr = tail.GetComponent <SpriteRenderer> ();
 		anim = GetComponent <Animator> ();
 	}
 
 	void OnEnable () {
+		RenderOrderManager.GetInstance.Register (this);
 		Controller.OnChangeController += ChangeTrackPadState;
 		anim.enabled = false;
 	}
 	
 	void OnDisable () {
+		RenderOrderManager.GetInstance.UnRegister (this);
 		Controller.OnChangeController -= ChangeTrackPadState;
 	}
 
@@ -72,5 +66,29 @@ public class Visual : MonoBehaviour {
 
 	public void ForcePlayAnimation (ControlEvent e) {
 		ChangeTrackPadState (e);
+	}
+
+	public int MakeOrder (int start) {
+		if (anim.enabled) {
+			var info = anim.GetCurrentAnimatorStateInfo (0);
+			if (info.shortNameHash == UpRightAnimationHash || info.shortNameHash == DownRightAnimationHash) {
+				for (int i = 0; i < rightOrder.Count; ++i) {
+					rightOrder [i].SetSortingOrder (start + i);
+				}
+				return start + rightOrder.Count;
+			} else {
+				for (int i = 0; i < leftOrder.Count; ++i) {
+					leftOrder [i].SetSortingOrder (start + i);
+				}
+				return start + leftOrder.Count;
+			}
+		}
+		return start + rightOrder.Count;
+	}
+
+	public GameObject Target {
+		get {
+			return transform.parent.gameObject;
+		}
 	}
 }

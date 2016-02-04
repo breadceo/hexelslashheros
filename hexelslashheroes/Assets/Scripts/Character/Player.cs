@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Player : MonoBehaviour, RenderObject {
+public class Player : MonoBehaviour {
 	[SerializeField] protected IController controller;
 	[SerializeField] protected float moveSpeed = 7.5f;
 	protected Vector3 dir = Vector3.zero;
@@ -103,12 +103,10 @@ public class Player : MonoBehaviour, RenderObject {
 	}
 
 	void OnEnable () {
-		RenderOrderManager.GetInstance.Register (this);
 		controller.OnChangeController += ChangeTrackPadState;
 	}
 
 	void OnDisable () {
-		RenderOrderManager.GetInstance.UnRegister (this);
 		controller.OnChangeController -= ChangeTrackPadState;
 	}
 
@@ -190,33 +188,6 @@ public class Player : MonoBehaviour, RenderObject {
 	protected void RequestChangeState (CharacterState state, System.Action initFunc = null) {
 		nextState = state;
 		nextStateInitAction = initFunc;
-	}
-
-	public int MakeOrder (int start) {
-		if (visual.anim.enabled) {
-			var info = visual.anim.GetCurrentAnimatorStateInfo (0);
-			if (info.shortNameHash == visual.UpRightAnimationHash || info.shortNameHash == visual.DownRightAnimationHash) {
-				visual.bodySpr.sortingOrder = start + 1;
-				visual.tailSpr.sortingOrder = start + 2;
-				visual.weaponSpr.sortingOrder = start;
-				trailController.SetSortingOrder (start + 3);
-				return start + 4;
-			} else {
-				visual.bodySpr.sortingOrder = start;
-				visual.weaponSpr.sortingOrder = start + 1;
-				visual.tailSpr.sortingOrder = start + 2;
-				trailController.SetSortingOrder (start + 3);
-				return start + 4;
-			}
-		} else {
-			return start + 4;
-		}
-	}
-
-	public GameObject Target {
-		get {
-			return gameObject;
-		}
 	}
 
 	void OnTriggerEnter (Collider other) {

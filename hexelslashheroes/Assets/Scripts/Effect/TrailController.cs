@@ -11,8 +11,4 @@ public class TrailController : MonoBehaviour {
 			Trail.sortingLayerName = SortingLayerName;
 		}
 	}
-
-	public void SetSortingOrder (int order) {
-		Trail.sortingOrder = order;
-	}
 }
