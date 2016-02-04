@@ -4,19 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 
 public class AI : IController, RenderObject {
-	[SerializeField] GameObject trackCharacter;
-	[SerializeField] int trackOffset;
-	protected Visual visual;
-	protected List <Vector3> trackPositions = new List<Vector3> ();
-	protected Vector3 dir;
-	protected Vector3 prevDir;
-	protected bool aiEnabled = false;
 	[SerializeField] protected BoxCollider body;
 	[SerializeField] protected BoxCollider weapon;
+	[SerializeField] protected float sight;
+	protected Visual visual;
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
-		visual.SetBlurs (false);
 	}
 
 	void OnEnable () {
@@ -57,29 +51,12 @@ public class AI : IController, RenderObject {
 		}
 	}
 
-	void Update () {
-		if (aiEnabled) {
-			trackPositions.Add (trackCharacter.transform.position);
-			if (trackPositions.Count > trackOffset) {
-				var diff = trackPositions [1] - trackPositions [0];
-				dir = diff.normalized;
-				if (prevDir != dir) {
-					visual.ForcePlayAnimation (CreateTrackPadEventByDirection (dir));
-				}
-				transform.position = trackPositions.First <Vector3> () - dir * 0.25f;
-				trackPositions.RemoveAt (0);
-				prevDir = dir;
-			} // else if stopped
-		}
-	}
-
 	void OnTriggerEnter (Collider other) {
 		if (other.gameObject.CompareTag ("PlayerWeapon")) {
 			GameManager.GetInstance.InvokeHitEvent (other.gameObject, gameObject);
 		}
 	}
 
-	// TODO: after write effectmanager, move this code.
 	void OnHitOccurs (GameObject attacker, GameObject defender) {
 		var ai = defender.GetComponentInParent <AI> ();
 		if (ai == this) {

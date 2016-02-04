@@ -9,7 +9,6 @@ public class Visual : MonoBehaviour {
 	public SpriteRenderer bodySpr;
 	public SpriteRenderer tailSpr;
 	public SpriteRenderer weaponSpr;
-	protected List<MotionBlur> blurs = new List<MotionBlur> ();
 
 	public int UpRightAnimationHash {
 		get;
@@ -41,19 +40,6 @@ public class Visual : MonoBehaviour {
 		var tail = transform.Find ("Tail").gameObject;
 		tailSpr = tail.GetComponent <SpriteRenderer> ();
 		anim = GetComponent <Animator> ();
-		var bodyBlur = body.GetComponent <MotionBlur> ();
-		if (bodyBlur) {
-			blurs.Add (bodyBlur);
-		}
-		var tailBlur = tail.GetComponent <MotionBlur> ();
-		if (tailBlur) {
-			blurs.Add (tailBlur);
-		}
-		var weaponBlur = weapon.GetComponent <MotionBlur> ();
-		if (weaponBlur) {
-			blurs.Add (weaponBlur);
-		}
-		SetBlurs (false);
 	}
 
 	void OnEnable () {
@@ -70,22 +56,14 @@ public class Visual : MonoBehaviour {
 			anim.enabled = true;
 			if (e.Vector == TrackPad.UpRight) {
 				anim.Play (UpRightAnimationHash, 0, 0f);
-				blurs.ForEach (b => b.offset = new Vector3 (0, 0, -1));
 			} else if (e.Vector == TrackPad.UpLeft) {
 				anim.Play (UpLeftAnimationHash, 0, 0f);
-				blurs.ForEach (b => b.offset = new Vector3 (0, 0, -1));
 			} else if (e.Vector == TrackPad.DownRight) {
 				anim.Play (DownRightAnimationHash, 0, 0f);
-				blurs.ForEach (b => b.offset = new Vector3 (0, 0, 1));
 			} else if (e.Vector == TrackPad.DownLeft) {
 				anim.Play (DownLeftAnimationHash, 0, 0f);
-				blurs.ForEach (b => b.offset = new Vector3 (0, 0, 1));
 			}
 		}
-	}
-
-	public void SetBlurs (bool enable) {
-		blurs.ForEach (b => b.enabled = enable);
 	}
 
 	public void StopAnimation () {

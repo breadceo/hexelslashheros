@@ -39,6 +39,7 @@ public class Player : MonoBehaviour, RenderObject {
 	[SerializeField] protected BoxCollider body;
 	[SerializeField] protected BoxCollider weapon;
 	[SerializeField] protected TrailController trailController;
+	[SerializeField] protected BlurController blurController;
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
@@ -70,7 +71,7 @@ public class Player : MonoBehaviour, RenderObject {
 		});
 
 		stateStart.Add (CharacterState.Attack, () => {
-			visual.SetBlurs (true);
+			blurController.SetBlurs (true);
 			weapon.enabled = true;
 			trailController.gameObject.SetActive (true);
 		});
@@ -81,7 +82,7 @@ public class Player : MonoBehaviour, RenderObject {
 			dir = Vector3.zero;
 		});
 		stateEnd.Add (CharacterState.Attack, () => {
-			visual.SetBlurs (false);
+			blurController.SetBlurs (false);
 			visual.StopAnimation ();
 			dir = Vector3.zero;
 			attackStartPoint = Vector3.zero;
