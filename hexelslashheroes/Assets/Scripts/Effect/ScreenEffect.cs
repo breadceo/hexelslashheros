@@ -20,8 +20,8 @@ public class ScreenEffect : MonoBehaviour {
 		if (focusCoroutine != null) {
 			StopCoroutine (focusCoroutine);
 		}
-		var character = attacker.GetComponentInParent <Character> ();
-		var dir = new Vector3 (character.Dir.x, character.Dir.y, 0f).normalized;
+		var player = attacker.GetComponentInParent <Player> ();
+		var dir = new Vector3 (player.Dir.x, player.Dir.y, 0f).normalized;
 		focusCoroutine = StartCoroutine (Focus (0.1f, dir, 0.0f));
 	}
 

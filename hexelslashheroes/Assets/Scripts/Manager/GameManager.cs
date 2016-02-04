@@ -37,20 +37,20 @@ public class GameManager : MonoBehaviour {
 		StageManager.GetInstance.LoadStageRandomly ();
 	}
 
-	public Character player {
+	public Player player {
 		get {
-			Character character = null;
+			Player player = null;
 			var characters = GameObject.Find ("Root/Characters").gameObject;
 			foreach (Transform c in characters.transform) {
 				if (c.CompareTag ("Player")) {
-					character = c.GetComponent <Character> ();
+					player = c.GetComponent <Player> ();
 					break;
 				}
 			}
-			if (character == null) {
+			if (player == null) {
 				throw new UnityException ("failed to find player");
 			} else {
-				return character;
+				return player;
 			}
 		}
 	}

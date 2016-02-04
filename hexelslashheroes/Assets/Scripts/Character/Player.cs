@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Character : MonoBehaviour, RenderObject {
+public class Player : MonoBehaviour, RenderObject {
 	[SerializeField] protected IController controller;
 	[SerializeField] protected float moveSpeed = 7.5f;
 	protected Vector3 dir = Vector3.zero;

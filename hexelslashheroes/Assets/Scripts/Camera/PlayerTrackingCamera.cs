@@ -4,15 +4,15 @@ using System.Collections;
 [RequireComponent (typeof (Camera))]
 public class PlayerTrackingCamera : MonoBehaviour {
 	[SerializeField]
-	protected Character Player;
-	protected Camera Target;
+	protected Player player;
+	protected Camera trackTarget;
 
 	void Awake () {
-		Target = GetComponent <Camera> ();
+		trackTarget = GetComponent <Camera> ();
 	}
 
 	void Update () {
-		var targetPos = new Vector3 (Player.transform.position.x, Player.transform.position.y, -10f);
-		Target.transform.position = targetPos;
+		var targetPos = new Vector3 (player.transform.position.x, player.transform.position.y, -10f);
+		trackTarget.transform.position = targetPos;
 	}
 }

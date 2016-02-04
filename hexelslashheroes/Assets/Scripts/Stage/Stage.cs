@@ -6,7 +6,7 @@ public class Stage : MonoBehaviour {
 	[SerializeField] protected BoxCollider door;
 	[SerializeField] Transform startingPoint;
 
-	public void Loaded (Character player) {
+	public void Loaded (Player player) {
 		player.transform.position = startingPoint.position;
 		player.Init ();
 		door.enabled = false;
