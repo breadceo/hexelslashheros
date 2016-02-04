@@ -54,4 +54,15 @@ public class GameManager : MonoBehaviour {
 			}
 		}
 	}
+
+	public Camera playerCamera {
+		get {
+			var cam = GameObject.Find ("Player Camera").GetComponent <Camera> ();
+			if (cam != null) {
+				return cam;
+			} else {
+				throw new UnityException ("failed to find player camera");
+			}
+		}
+	}
 }

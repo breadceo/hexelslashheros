@@ -5,14 +5,12 @@ using System.Collections.Generic;
 public class Character : MonoBehaviour, RenderObject {
 	[SerializeField] protected IController controller;
 	[SerializeField] protected float moveSpeed = 7.5f;
-	[SerializeField] protected Camera characterCamera;
 	protected Vector3 dir = Vector3.zero;
 	public Vector3 Dir {
 		get {
 			return dir;
 		}
 	}
-	protected Coroutine attackCoroutine;
 	[SerializeField] protected float attackDuration = 0.1f;
 	[SerializeField] protected float attackRange = 10f;
 	protected Vector3 attackStartPoint = Vector3.zero;
@@ -34,18 +32,10 @@ public class Character : MonoBehaviour, RenderObject {
 	protected Dictionary <CharacterState, System.Action> stateEnd = new Dictionary<CharacterState, System.Action> ();
 	protected Dictionary <CharacterState, List<CharacterState>> transitable = new Dictionary<CharacterState, List<CharacterState>> ();
 	protected Visual visual;
-	protected Vector3 rayOrigin {
-		get {
-			return new Vector3 (transform.position.x, transform.position.y, characterCamera.transform.position.z);
-		}
-	}
 	protected bool controllable {
 		get;
 		set;
 	}
-	[SerializeField] protected float gravitySpeed = 20f;
-	protected Vector3 gravityDir = Vector3.down;
-	protected float fallStartTime;
 	[SerializeField] protected BoxCollider body;
 	[SerializeField] protected BoxCollider weapon;
 	[SerializeField] protected TrailController trailController;
@@ -152,7 +142,7 @@ public class Character : MonoBehaviour, RenderObject {
 			RequestChangeState (CharacterState.Attack, () => {
 				attackStartTime = Time.time;
 				attackStartPoint = transform.position;
-				var worldPosition = characterCamera.ScreenToWorldPoint (e.Vector);
+				var worldPosition = GameManager.GetInstance.playerCamera.ScreenToWorldPoint (e.Vector);
 				var clickPoint = new Vector3 (worldPosition.x, worldPosition.y, transform.position.z);
 				dir = (clickPoint - attackStartPoint).normalized;
 				attackEndPoint = attackStartPoint + dir * attackRange;

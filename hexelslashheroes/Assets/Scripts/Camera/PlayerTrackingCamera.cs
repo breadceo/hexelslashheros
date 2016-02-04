@@ -13,6 +13,6 @@ public class PlayerTrackingCamera : MonoBehaviour {
 
 	void Update () {
 		var targetPos = new Vector3 (Player.transform.position.x, Player.transform.position.y, -10f);
-		Target.transform.position = Vector3.Lerp (Target.transform.position, targetPos, 0.99f);
+		Target.transform.position = targetPos;
 	}
 }
