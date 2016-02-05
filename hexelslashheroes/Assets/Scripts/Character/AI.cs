@@ -46,6 +46,8 @@ public class AI : IController {
 				system.Stop ();
 				system.Play ();
 			}
+			GameObject.Destroy (gameObject);
+			GameManager.GetInstance.InvokeDeadEvent (gameObject);
 		}
 	}
 }

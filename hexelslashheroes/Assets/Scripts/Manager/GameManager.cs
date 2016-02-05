@@ -8,13 +8,14 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 	protected static GameManager _instance;
+	protected int currentFloor = 1;
 
 	void Awake () {
 		_instance = this;
 	}
 
 	void Start () {
-		StageManager.GetInstance.LoadStage ("1");
+		StageManager.GetInstance.LoadStage ("1", currentFloor);
 	}
 
 	void OnDestroy () {
@@ -23,8 +24,6 @@ public class GameManager : MonoBehaviour {
 
 	public delegate void HitOccurs (GameObject attacker, GameObject defender);
 	public event HitOccurs OnHitOccurs;
-//	public delegate void 
-
 	public void InvokeHitEvent (GameObject attacker, GameObject defender) {
 		// INFO: player doesn't have character component, it's just weapon collider.
 		if (OnHitOccurs != null) {
@@ -34,7 +33,8 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public void InvokeNextStageEvent () {
-		StageManager.GetInstance.LoadStageRandomly ();
+		currentFloor++;
+		StageManager.GetInstance.LoadStageRandomly (currentFloor);
 	}
 
 	public Player player {
@@ -63,6 +63,14 @@ public class GameManager : MonoBehaviour {
 			} else {
 				throw new UnityException ("failed to find player camera");
 			}
+		}
+	}
+
+	public delegate void ObjectDead (GameObject obj);
+	public event ObjectDead OnObjectDead;
+	public void InvokeDeadEvent (GameObject obj) {
+		if (OnObjectDead != null) {
+			OnObjectDead (obj);
 		}
 	}
 }

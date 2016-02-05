@@ -4,7 +4,7 @@ using System.Collections;
 public class Stage : MonoBehaviour {
 	[SerializeField] protected BoxCollider area;
 	[SerializeField] protected BoxCollider door;
-	[SerializeField] Transform startingPoint;
+	[SerializeField] protected Transform startingPoint;
 
 	public void Loaded (Player player) {
 		player.transform.position = startingPoint.position;
@@ -23,5 +23,4 @@ public class Stage : MonoBehaviour {
 		}
 		return blocked;
 	}
-
 }
