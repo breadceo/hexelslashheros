@@ -40,6 +40,7 @@ public class Player : MonoBehaviour {
 	[SerializeField] protected BoxCollider weapon;
 	[SerializeField] protected TrailController trailController;
 	[SerializeField] protected BlurController blurController;
+	[SerializeField] protected GameObject arrowPrefab;
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
@@ -103,10 +104,12 @@ public class Player : MonoBehaviour {
 
 	void OnEnable () {
 		controller.OnChangeController += ChangeTrackPadState;
+		GameManager.GetInstance.OnObjectSpawn += OnObjectSpawn;
 	}
 
 	void OnDisable () {
 		controller.OnChangeController -= ChangeTrackPadState;
+		GameManager.GetInstance.OnObjectSpawn -= OnObjectSpawn;
 	}
 
 	void Update () {
@@ -194,6 +197,17 @@ public class Player : MonoBehaviour {
 			GameManager.GetInstance.InvokeHitEvent (other.gameObject, gameObject);
 		} else if (other.gameObject.CompareTag ("Door")) {
 			GameManager.GetInstance.InvokeNextStageEvent ();
+		}
+	}
+
+	void OnObjectSpawn (GameObject obj) {
+		var ai = obj.GetComponent <AI> ();
+		if (ai != null) {
+			var arrow = GameManager.GetInstance.Instantiate (arrowPrefab);
+			arrow.transform.SetParent (arrowPrefab.transform.parent);
+			var enemyGuide = arrow.GetComponent <EnemyGuide> ();
+			enemyGuide.Trace (gameObject, obj);
+			arrow.SetActive (true);
 		}
 	}
 }

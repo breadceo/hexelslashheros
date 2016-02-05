@@ -66,11 +66,17 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
-	public delegate void ObjectDead (GameObject obj);
-	public event ObjectDead OnObjectDead;
+	public delegate void ObjectDelegate (GameObject obj);
+	public event ObjectDelegate OnObjectDead;
 	public void InvokeDeadEvent (GameObject obj) {
 		if (OnObjectDead != null) {
 			OnObjectDead (obj);
+		}
+	}
+	public event ObjectDelegate OnObjectSpawn;
+	public void InvokeSpawnEvent (GameObject obj) {
+		if (OnObjectSpawn != null) {
+			OnObjectSpawn (obj);
 		}
 	}
 

@@ -31,7 +31,7 @@ public class AI : IController {
 	protected Vector3 roamingStartPoint = Vector3.zero;
 	protected Vector3 roamingEndPoint = Vector3.zero;
 	protected Vector2 roamingDir = Vector2.zero;
-	[SerializeField] protected SightDrawer sightDrawer;
+	[SerializeField] protected GameObject exclamationMark;
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
@@ -57,6 +57,10 @@ public class AI : IController {
 			CheckPlayerInSight ();
 		});
 
+		stateStart.Add (AiState.Alarmed, () => {
+			exclamationMark.SetActive (true);
+		});
+
 		stateStart.Add (AiState.Roaming, () => {
 			var dir = new Vector3 (roamingDir.x, roamingDir.y, 0f);
 			roamingEndPoint = roamingStartPoint + roamingDistance * dir;
@@ -77,8 +81,6 @@ public class AI : IController {
 		stateEnd.Add (AiState.Roaming, () => {
 			visual.StopAnimation ();
 		});
-
-		sightDrawer.SetRadius (sight);
 	}
 
 	void OnEnable () {
@@ -137,6 +139,7 @@ public class AI : IController {
 			visual.ForcePlayAnimation (e);
 			visual.StopAnimation ();
 		});
+		GameManager.GetInstance.InvokeSpawnEvent (gameObject);
 	}
 
 	protected void RequestChangeState (AiState state, System.Action initFunc = null) {
