@@ -6,7 +6,7 @@ using System.Linq;
 public class AI : IController {
 	[SerializeField] protected BoxCollider body;
 	[SerializeField] protected BoxCollider weapon;
-	[SerializeField] protected float sight;
+	[SerializeField] protected float sight = 15f;
 	protected Visual visual;
 	protected enum AiState
 	{
@@ -15,6 +15,7 @@ public class AI : IController {
 		Roaming,
 		Alarmed,
 		Attack,
+		Cooldown,
 		Stuck,
 	}
 	protected AiState currentState;
@@ -32,6 +33,20 @@ public class AI : IController {
 	protected Vector3 roamingEndPoint = Vector3.zero;
 	protected Vector2 roamingDir = Vector2.zero;
 	[SerializeField] protected GameObject exclamationMark;
+	[SerializeField] protected float attackWaitTime = 1f;
+	protected float attackStartTime;
+	[SerializeField] protected float attackDuration = 0.2f;
+	[SerializeField] protected float attackRange = 10;
+	protected Vector3 attackStartPoint = Vector3.zero;
+	protected Vector3 attackEndPoint = Vector3.zero;
+	protected Vector3 dir;
+	public Vector3 Dir {
+		get {
+			return dir;
+		}
+	}
+	[SerializeField] protected float attackCooldown = 3;
+	protected float cooldownStartTime;
 
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
@@ -40,11 +55,13 @@ public class AI : IController {
 		transitable.Add (AiState.Idle, new List<AiState> { AiState.Alarmed, AiState.Roaming });
 		transitable.Add (AiState.Roaming, new List<AiState> { AiState.Idle, AiState.Alarmed, AiState.Stuck });
 		transitable.Add (AiState.Alarmed, new List<AiState> { AiState.Attack, AiState.Stuck });
-		transitable.Add (AiState.Attack, new List<AiState> { AiState.Idle, AiState.Stuck });
+		transitable.Add (AiState.Attack, new List<AiState> { AiState.Cooldown, AiState.Idle, AiState.Stuck });
+		transitable.Add (AiState.Cooldown, new List<AiState> { AiState.Idle });
 		transitable.Add (AiState.Stuck, new List<AiState> { AiState.Idle });
 
 		stateStart.Add (AiState.Idle, () => {
 			roamingStartTime = Time.time + 1f;
+			exclamationMark.SetActive (false);
 		});
 		stateMachine.Add (AiState.Idle, () => {
 			if (Time.time > roamingStartTime) {
@@ -59,6 +76,64 @@ public class AI : IController {
 
 		stateStart.Add (AiState.Alarmed, () => {
 			exclamationMark.SetActive (true);
+			attackStartTime = Time.time + attackWaitTime;
+		});
+		stateMachine.Add (AiState.Alarmed, () => {
+			if (Time.time > attackStartTime) {
+				RequestChangeState (AiState.Attack, () => {
+					if (GameManager.GetInstance.player != null) {
+						attackStartPoint = transform.position;
+						dir = (GameManager.GetInstance.player.transform.position - attackStartPoint).normalized;
+						attackEndPoint = attackStartPoint + dir * attackRange;
+						var e = CreateTrackPadEventByDirection (TrackPad.FindNesrestDirection (dir));
+						visual.ForcePlayAnimation (e);
+					} else {
+						RequestChangeState (AiState.Cooldown);
+					}
+				});
+			} else {
+				if (GameManager.GetInstance.player != null) {
+					dir = (GameManager.GetInstance.player.transform.position - transform.position).normalized;
+					var e = CreateTrackPadEventByDirection (TrackPad.FindNesrestDirection (dir));
+					visual.ForcePlayAnimation (e);
+				}
+			}
+		});
+
+		stateStart.Add (AiState.Attack, () => {
+			weapon.enabled = true;
+		});
+		stateMachine.Add (AiState.Attack, () => {
+			float t = (Time.time - attackStartTime) / attackDuration;
+			t = Mathf.Clamp01 (t);
+			if (t >= 1f) {
+				transform.position = attackEndPoint;
+				RequestChangeState (AiState.Idle);
+				return;
+			}
+			t *= 2f;
+			var diff = attackEndPoint - attackStartPoint;
+			if (t < 1) {
+				transform.position = diff * 0.5f * t * t + attackStartPoint;
+			} else {
+				t--;
+				transform.position = -diff * 0.5f * (t * (t - 2f) - 1f) + attackStartPoint;
+			}
+			CheckBlock ();
+		});
+		stateEnd.Add (AiState.Attack, () => {
+			visual.StopAnimation ();
+			weapon.enabled = false;
+			RequestChangeState (AiState.Cooldown);
+		});
+
+		stateStart.Add (AiState.Cooldown, () => {
+			cooldownStartTime = Time.time;
+		});
+		stateMachine.Add (AiState.Cooldown, () => {
+			if (cooldownStartTime + attackCooldown > Time.time) {
+				RequestChangeState (AiState.Idle);
+			}
 		});
 
 		stateStart.Add (AiState.Roaming, () => {
@@ -126,8 +201,8 @@ public class AI : IController {
 				system.Stop ();
 				system.Play ();
 			}
-			GameManager.GetInstance.Destroy (gameObject);
 			GameManager.GetInstance.InvokeDeadEvent (gameObject);
+			GameManager.GetInstance.Destroy (gameObject);
 		}
 	}
 
@@ -189,9 +264,11 @@ public class AI : IController {
 	}
 
 	protected void CheckPlayerInSight () {
-		var distance = (GameManager.GetInstance.player.transform.position - transform.position).magnitude;
-		if (distance < sight) {
-			RequestChangeState (AiState.Alarmed);
+		if (GameManager.GetInstance.player != null) {
+			var distance = (GameManager.GetInstance.player.transform.position - transform.position).magnitude;
+			if (distance < sight) {
+				RequestChangeState (AiState.Alarmed);
+			}
 		}
 	}
 }

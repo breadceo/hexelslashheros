@@ -25,11 +25,12 @@ public class GameManager : MonoBehaviour {
 	public delegate void HitOccurs (GameObject attacker, GameObject defender);
 	public event HitOccurs OnHitOccurs;
 	public void InvokeHitEvent (GameObject attacker, GameObject defender) {
-		// INFO: player doesn't have character component, it's just weapon collider.
 		if (OnHitOccurs != null) {
 			OnHitOccurs (attacker, defender);
 		}
-		GameSpeedManager.GetInstance.RequestTimeStop (0.05f, 0.05f, 0.2f);
+		if (attacker.GetComponentInParent <Player> () != null) {
+			GameSpeedManager.GetInstance.RequestTimeStop (0.05f, 0.5f, 0.2f);
+		}
 	}
 
 	public void InvokeNextStageEvent () {
@@ -47,11 +48,7 @@ public class GameManager : MonoBehaviour {
 					break;
 				}
 			}
-			if (player == null) {
-				throw new UnityException ("failed to find player");
-			} else {
-				return player;
-			}
+			return player;
 		}
 	}
 
@@ -72,6 +69,11 @@ public class GameManager : MonoBehaviour {
 		if (OnObjectDead != null) {
 			OnObjectDead (obj);
 		}
+		var player = obj.GetComponent <Player> ();
+		if (player != null) {
+			GameSpeedManager.GetInstance.RequestTimeStop (0.05f, 0.5f, 0.2f);
+			StartCoroutine (StartNewGame (1f));
+		}
 	}
 	public event ObjectDelegate OnObjectSpawn;
 	public void InvokeSpawnEvent (GameObject obj) {
@@ -86,5 +88,10 @@ public class GameManager : MonoBehaviour {
 
 	public void Destroy (GameObject obj) {
 		GameObject.Destroy (obj);
+	}
+
+	IEnumerator StartNewGame (float wait) {
+		yield return new WaitForSeconds (wait);
+		Application.LoadLevel ("main");
 	}
 }

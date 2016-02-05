@@ -59,11 +59,13 @@ public class StageManager : MonoBehaviour {
 	public delegate void RequireSoulChanged (int requireSoul);
 	public event RequireSoulChanged OnRequireSoulChanged;
 	void OnObjectDead (GameObject obj) {
-		currentRequireSoul = Mathf.Max (0, currentRequireSoul - 1);
-		if (OnRequireSoulChanged != null) {
-			OnRequireSoulChanged (currentRequireSoul);
+		if (obj.GetComponent <AI> () != null) {
+			currentRequireSoul = Mathf.Max (0, currentRequireSoul - 1);
+			if (OnRequireSoulChanged != null) {
+				OnRequireSoulChanged (currentRequireSoul);
+			}
+			currentStage.ActivateDoor (currentRequireSoul <= 0);
 		}
-		currentStage.ActivateDoor (currentRequireSoul <= 0);
 	}
 
 	public delegate void StageChanged (int floor);

@@ -52,7 +52,7 @@ public class Stage : MonoBehaviour {
 			var ai = enemy.GetComponent <AI> ();
 			var x = Random.Range (area.bounds.min.x, area.bounds.max.x);
 			var y = Random.Range (area.bounds.min.y, area.bounds.max.y);
-			ai.Spawn (new Vector3 (x, y, GameManager.GetInstance.player.transform.position.z));
+			ai.Spawn (new Vector3 (x, y, 0f));
 			enemy.SetActive (true);
 			enemyList.Add (ai);
 		}

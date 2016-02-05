@@ -12,7 +12,9 @@ public class PlayerTrackingCamera : MonoBehaviour {
 	}
 
 	void Update () {
-		var targetPos = new Vector3 (player.transform.position.x, player.transform.position.y, -10f);
-		trackTarget.transform.position = targetPos;
+		if (player != null) {
+			var targetPos = new Vector3 (player.transform.position.x, player.transform.position.y, -10f);
+			trackTarget.transform.position = targetPos;
+		}
 	}
 }

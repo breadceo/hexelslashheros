@@ -17,6 +17,12 @@ public class GameSpeedManager : MonoBehaviour {
 		_instance = null;
 	}
 
+	public bool NeedFocus {
+		get {
+			return timeStopCoroutine != null;
+		}
+	}
+
 	Coroutine timeStopCoroutine;
 	public void RequestTimeStop (float fadeIn, float fadeOut, float timeToStop) {
 		if (timeStopCoroutine != null) {
@@ -55,5 +61,6 @@ public class GameSpeedManager : MonoBehaviour {
 			}
 		}
 		Time.timeScale = 1f;
+		timeStopCoroutine = null;
 	}
 }

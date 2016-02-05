@@ -35,24 +35,28 @@ public class TrackPad : IController, IPointerDownHandler, IPointerClickHandler {
 		SpawnEvent (controlEvent);
 	}
 
-	public override ControlEvent CreateTrackPadEventByDirection (Vector3 dir) {
-		ControlEvent ret = new ControlEvent ();
-		ret.Kind = ControlEvent.EventKind.Swipe;
+	public static Vector3 FindNesrestDirection (Vector3 dir) {
 		float ur = Vector2.Angle (UpRight, dir);
 		float ul = Vector2.Angle (UpLeft, dir);
 		float dr = Vector2.Angle (DownRight, dir);
 		float dl = Vector2.Angle (DownLeft, dir);
 		float choose = Mathf.Min (new float [] { ur, ul, dr, dl });
 		if (choose == ur) {
-			ret.Vector = UpRight;
+			return TrackPad.UpRight;
 		} else if (choose == ul) {
-			ret.Vector = UpLeft;
+			return TrackPad.UpLeft;
 		} else if (choose == dr) {
-			ret.Vector = DownRight;
+			return TrackPad.DownRight;
 		} else {
-			ret.Vector = DownLeft;
+			return TrackPad.DownLeft;
 		}
-		return ret;
+	}
+
+	public override ControlEvent CreateTrackPadEventByDirection (Vector3 dir) {
+		return new ControlEvent {
+			Kind = ControlEvent.EventKind.Swipe,
+			Vector = FindNesrestDirection (dir)
+		};
 	}
 
 	void Update () {

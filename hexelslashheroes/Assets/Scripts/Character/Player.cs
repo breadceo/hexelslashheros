@@ -22,6 +22,7 @@ public class Player : MonoBehaviour {
 		Move,
 		Attack,
 		Stuck,
+		Dead
 	}
 	protected CharacterState currentState;
 	protected System.Action currentStateAction;
@@ -46,10 +47,11 @@ public class Player : MonoBehaviour {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
 
 		transitable.Add (CharacterState.Spawn, new List<CharacterState> { CharacterState.Idle });
-		transitable.Add (CharacterState.Idle, new List<CharacterState> { CharacterState.Attack, CharacterState.Move, CharacterState.Stuck });
-		transitable.Add (CharacterState.Attack, new List<CharacterState> { CharacterState.Attack, CharacterState.Idle, CharacterState.Stuck });
-		transitable.Add (CharacterState.Move, new List<CharacterState> { CharacterState.Attack, CharacterState.Idle, CharacterState.Move, CharacterState.Stuck });
-		transitable.Add (CharacterState.Stuck, new List<CharacterState> { CharacterState.Attack, CharacterState.Idle, CharacterState.Move });
+		transitable.Add (CharacterState.Idle, new List<CharacterState> { CharacterState.Attack, CharacterState.Dead, CharacterState.Move, CharacterState.Stuck });
+		transitable.Add (CharacterState.Attack, new List<CharacterState> { CharacterState.Attack, CharacterState.Dead, CharacterState.Idle, CharacterState.Stuck });
+		transitable.Add (CharacterState.Move, new List<CharacterState> { CharacterState.Attack, CharacterState.Dead, CharacterState.Idle, CharacterState.Move, CharacterState.Stuck });
+		transitable.Add (CharacterState.Stuck, new List<CharacterState> { CharacterState.Attack, CharacterState.Dead, CharacterState.Idle, CharacterState.Move });
+		transitable.Add (CharacterState.Dead, new List<CharacterState> { });
 
 		controllable = true;
 		stateMachine.Add (CharacterState.Idle, () => {
@@ -72,10 +74,18 @@ public class Player : MonoBehaviour {
 		stateMachine.Add (CharacterState.Attack, () => {
 			float t = (Time.time - attackStartTime) / attackDuration;
 			t = Mathf.Clamp01 (t);
-			transform.position = Vector3.Lerp (attackStartPoint, attackEndPoint, t);
 			if (t >= 1f) {
 				transform.position = attackEndPoint;
 				RequestChangeState (CharacterState.Idle);
+				return;
+			}
+			t *= 2f;
+			var diff = attackEndPoint - attackStartPoint;
+			if (t < 1) {
+				transform.position = diff * 0.5f * t * t + attackStartPoint;
+			} else {
+				t--;
+				transform.position = -diff * 0.5f * (t * (t - 2f) - 1f) + attackStartPoint;
 			}
 			CheckBlock ();
 		});
@@ -87,6 +97,10 @@ public class Player : MonoBehaviour {
 			attackEndPoint = Vector3.zero;
 			weapon.enabled = false;
 			trailController.gameObject.SetActive (false);
+		});
+
+		stateStart.Add (CharacterState.Dead, () => {
+			controllable = false;
 		});
 	}
 
@@ -125,11 +139,6 @@ public class Player : MonoBehaviour {
 			RequestChangeState (CharacterState.Stuck);
 		}
 	}
-
-//	protected void OnDrawGizmos () {
-//		Gizmos.color = Color.yellow;
-//		Gizmos.DrawCube (map.center, map.bounds.size);
-//	}
 
 	protected void ChangeTrackPadState (ControlEvent e) {
 		if (controllable == false) {
@@ -193,10 +202,14 @@ public class Player : MonoBehaviour {
 	}
 
 	void OnTriggerEnter (Collider other) {
-		if (other.gameObject.CompareTag ("EnemyWeapon")) {
-			GameManager.GetInstance.InvokeHitEvent (other.gameObject, gameObject);
-		} else if (other.gameObject.CompareTag ("Door")) {
-			GameManager.GetInstance.InvokeNextStageEvent ();
+		if (currentState != CharacterState.Dead) {
+			if (other.gameObject.CompareTag ("EnemyWeapon")) {
+				GameManager.GetInstance.InvokeHitEvent (other.gameObject, gameObject);
+				GameManager.GetInstance.InvokeDeadEvent (gameObject);
+				GameManager.GetInstance.Destroy (gameObject);
+			} else if (other.gameObject.CompareTag ("Door")) {
+				GameManager.GetInstance.InvokeNextStageEvent ();
+			}
 		}
 	}
 
@@ -205,6 +218,7 @@ public class Player : MonoBehaviour {
 		if (ai != null) {
 			var arrow = GameManager.GetInstance.Instantiate (arrowPrefab);
 			arrow.transform.SetParent (arrowPrefab.transform.parent);
+			arrow.transform.localPosition = Vector3.zero;
 			var enemyGuide = arrow.GetComponent <EnemyGuide> ();
 			enemyGuide.Trace (gameObject, obj);
 			arrow.SetActive (true);
