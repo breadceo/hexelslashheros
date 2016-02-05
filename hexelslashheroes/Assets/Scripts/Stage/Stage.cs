@@ -47,14 +47,14 @@ public class Stage : MonoBehaviour {
 
 	public void Init (int requireSoulCount) {
 		for (int i = 0; i < requireSoulCount; ++i) {
-			var ai = enemyPool [Random.Range (0, enemyPool.Count)];
-			var enemy = GameManager.GetInstance.Instantiate (ai.gameObject);
-			enemy.SetActive (true);
-
+			var template = enemyPool [Random.Range (0, enemyPool.Count)];
+			var enemy = GameManager.GetInstance.Instantiate (template.gameObject);
+			var ai = enemy.GetComponent <AI> ();
 			var x = Random.Range (area.bounds.min.x, area.bounds.max.x);
 			var y = Random.Range (area.bounds.min.y, area.bounds.max.y);
-			enemy.transform.position = new Vector3 (x, y, GameManager.GetInstance.player.transform.position.z);
-			enemyList.Add (enemy.GetComponent <AI> ());
+			ai.Spawn (new Vector3 (x, y, GameManager.GetInstance.player.transform.position.z));
+			enemy.SetActive (true);
+			enemyList.Add (ai);
 		}
 	}
 

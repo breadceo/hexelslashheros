@@ -12,12 +12,12 @@ public class Player : MonoBehaviour {
 		}
 	}
 	[SerializeField] protected float attackDuration = 0.1f;
-	[SerializeField] protected float attackRange = 10f;
 	protected Vector3 attackStartPoint = Vector3.zero;
 	protected Vector3 attackEndPoint = Vector3.zero;
 	protected float attackStartTime;
 	protected enum CharacterState
 	{
+		Spawn,
 		Idle,
 		Move,
 		Attack,
@@ -44,6 +44,7 @@ public class Player : MonoBehaviour {
 	void Awake () {
 		visual = transform.Find ("Visual").GetComponent <Visual> ();
 
+		transitable.Add (CharacterState.Spawn, new List<CharacterState> { CharacterState.Idle });
 		transitable.Add (CharacterState.Idle, new List<CharacterState> { CharacterState.Attack, CharacterState.Move, CharacterState.Stuck });
 		transitable.Add (CharacterState.Attack, new List<CharacterState> { CharacterState.Attack, CharacterState.Idle, CharacterState.Stuck });
 		transitable.Add (CharacterState.Move, new List<CharacterState> { CharacterState.Attack, CharacterState.Idle, CharacterState.Move, CharacterState.Stuck });
@@ -53,21 +54,13 @@ public class Player : MonoBehaviour {
 		stateMachine.Add (CharacterState.Idle, () => {
 			CheckBlock ();
 		});
+
 		stateMachine.Add (CharacterState.Move, () => {
 			transform.position += dir * moveSpeed * Time.deltaTime;
 			CheckBlock ();
 		});
-		stateMachine.Add (CharacterState.Attack, () => {
-			float t = (Time.time - attackStartTime) / 0.2f;
-			t = Mathf.Clamp01 (t);
-			transform.position = Vector3.Lerp (attackStartPoint, attackEndPoint, t);
-			if (t >= 1f) {
-				transform.position = attackEndPoint;
-				RequestChangeState (CharacterState.Idle);
-			}
-			CheckBlock ();
-		});
-		stateMachine.Add (CharacterState.Stuck, () => {
+		stateEnd.Add (CharacterState.Move, () => {
+			dir = Vector3.zero;
 		});
 
 		stateStart.Add (CharacterState.Attack, () => {
@@ -75,11 +68,15 @@ public class Player : MonoBehaviour {
 			weapon.enabled = true;
 			trailController.gameObject.SetActive (true);
 		});
-		stateStart.Add (CharacterState.Stuck, () => {
-		});
-
-		stateEnd.Add (CharacterState.Move, () => {
-			dir = Vector3.zero;
+		stateMachine.Add (CharacterState.Attack, () => {
+			float t = (Time.time - attackStartTime) / attackDuration;
+			t = Mathf.Clamp01 (t);
+			transform.position = Vector3.Lerp (attackStartPoint, attackEndPoint, t);
+			if (t >= 1f) {
+				transform.position = attackEndPoint;
+				RequestChangeState (CharacterState.Idle);
+			}
+			CheckBlock ();
 		});
 		stateEnd.Add (CharacterState.Attack, () => {
 			blurController.SetBlurs (false);
@@ -90,7 +87,9 @@ public class Player : MonoBehaviour {
 			weapon.enabled = false;
 			trailController.gameObject.SetActive (false);
 		});
+	}
 
+	void Start () {
 		Init ();
 	}
 
@@ -144,7 +143,7 @@ public class Player : MonoBehaviour {
 				var worldPosition = GameManager.GetInstance.playerCamera.ScreenToWorldPoint (e.Vector);
 				var clickPoint = new Vector3 (worldPosition.x, worldPosition.y, transform.position.z);
 				dir = (clickPoint - attackStartPoint).normalized;
-				attackEndPoint = attackStartPoint + dir * attackRange;
+				attackEndPoint = clickPoint;
 				visual.ForcePlayAnimation (controller.CreateTrackPadEventByDirection (dir));
 			});
 		}

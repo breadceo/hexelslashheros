@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections;
+using System.Collections.Generic;
 
 public class TrackPad : IController, IPointerDownHandler, IPointerClickHandler {
 	protected Vector2 pointerDownPos;
@@ -15,6 +16,7 @@ public class TrackPad : IController, IPointerDownHandler, IPointerClickHandler {
 		UpLeft = new Vector2 (-x, y).normalized;
 		DownRight = new Vector2 (x, -y).normalized;
 		DownLeft = new Vector2 (-x, -y).normalized;
+		Directions = new List<Vector2> { UpLeft, UpRight, DownLeft, DownRight };
 	}
 
 	public void OnPointerDown (PointerEventData eventData) {
@@ -81,4 +83,10 @@ public class TrackPad : IController, IPointerDownHandler, IPointerClickHandler {
 	internal static Vector2 UpLeft;
 	internal static Vector2 DownRight;
 	internal static Vector2 DownLeft;
+	internal static List<Vector2> Directions;
+	internal static Vector2 RandomDirection {
+		get {
+			return TrackPad.Directions [Random.Range (0, TrackPad.Directions.Count)];
+		}
+	}
 }
