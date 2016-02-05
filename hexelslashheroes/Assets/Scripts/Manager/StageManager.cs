@@ -63,6 +63,7 @@ public class StageManager : MonoBehaviour {
 		if (OnRequireSoulChanged != null) {
 			OnRequireSoulChanged (currentRequireSoul);
 		}
+		currentStage.ActivateDoor (currentRequireSoul <= 0);
 	}
 
 	public delegate void StageChanged (int floor);
@@ -77,6 +78,7 @@ public class StageManager : MonoBehaviour {
 					currentStage = s;
 				}
 			});
+			currentStage.Init (currentRequireSoul);
 			currentStage.Loaded (GameManager.GetInstance.player);
 			if (OnStageChanged != null) {
 				OnStageChanged (floor);

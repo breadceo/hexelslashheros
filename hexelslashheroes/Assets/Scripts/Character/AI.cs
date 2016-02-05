@@ -18,7 +18,9 @@ public class AI : IController {
 	}
 
 	void OnDisable () {
-		GameManager.GetInstance.OnHitOccurs -= OnHitOccurs;
+		if (GameManager.GetInstance != null) {
+			GameManager.GetInstance.OnHitOccurs -= OnHitOccurs;
+		}
 	}
 
 	public override ControlEvent CreateTrackPadEventByDirection (Vector3 dir) {
@@ -46,7 +48,7 @@ public class AI : IController {
 				system.Stop ();
 				system.Play ();
 			}
-			GameObject.Destroy (gameObject);
+			GameManager.GetInstance.Destroy (gameObject);
 			GameManager.GetInstance.InvokeDeadEvent (gameObject);
 		}
 	}

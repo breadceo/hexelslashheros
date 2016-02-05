@@ -41,7 +41,9 @@ public class Visual : MonoBehaviour, RenderObject {
 	}
 	
 	void OnDisable () {
-		RenderOrderManager.GetInstance.UnRegister (this);
+		if (RenderOrderManager.GetInstance != null) {
+			RenderOrderManager.GetInstance.UnRegister (this);
+		}
 		Controller.OnChangeController -= ChangeTrackPadState;
 	}
 

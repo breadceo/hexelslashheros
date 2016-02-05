@@ -73,4 +73,12 @@ public class GameManager : MonoBehaviour {
 			OnObjectDead (obj);
 		}
 	}
+
+	public GameObject Instantiate (GameObject obj) {
+		return GameObject.Instantiate (obj);
+	}
+
+	public void Destroy (GameObject obj) {
+		GameObject.Destroy (obj);
+	}
 }

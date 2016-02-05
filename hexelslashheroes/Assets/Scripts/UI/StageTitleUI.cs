@@ -19,6 +19,6 @@ public class StageTitleUI : MonoBehaviour {
 	}
 
 	void OnStageChanged (int floor) {
-		label.text = string.Format ("도산지옥 <color=red>{0}</color>층", floor);
+		label.text = string.Format ("헬조선 <color=red>{0}</color>층", floor);
 	}
 }
